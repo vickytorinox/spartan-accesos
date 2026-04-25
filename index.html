@@ -451,10 +451,10 @@
   </div>
 
   <!-- CAMARA MODAL -->
-  <div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column;">
-    <video id="videoStream" autoplay playsinline style="width:100%; flex:1; object-fit:cover;"></video>
+  <div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column; height:100dvh;">
+    <video id="videoStream" autoplay playsinline style="width:100%; flex:1; object-fit:cover; min-height:0;"></video>
     <canvas id="fotoCanvas" style="display:none;"></canvas>
-    <div style="padding:20px; display:flex; gap:12px; background:#0a0a0a;">
+    <div style="padding:16px; display:flex; gap:12px; background:#0a0a0a; flex-shrink:0;">
       <button onclick="cancelarCamara()" style="flex:1; padding:16px; background:#1e1e1e; color:#ccc; border:1px solid #333; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:15px; cursor:pointer;">Cancelar</button>
       <button onclick="tomarFoto()" style="flex:2; padding:16px; background:#1db954; color:white; border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; cursor:pointer;">📷 SACAR FOTO</button>
     </div>
@@ -609,6 +609,7 @@ async function abrirCamara() {
     const modal = document.getElementById('camaraModal');
     modal.style.display = 'flex';
     modal.style.flexDirection = 'column';
+    document.body.style.overflow = 'hidden';
   } catch(err) {
     showToast('No se pudo acceder a la cámara — verificá los permisos', 'error');
   }
@@ -641,6 +642,7 @@ function cerrarStreamCamara() {
     streamActivo = null;
   }
   document.getElementById('camaraModal').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 function mostrarFotoPreview(dataUrl) {
