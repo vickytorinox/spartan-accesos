@@ -443,12 +443,21 @@
   <!-- Foto -->
   <div class="field-group">
     <div class="field-label">Foto de la patente</div>
-    <div class="photo-zone" id="photoZone" onclick="triggerCamera()">
+    <div class="photo-zone" id="photoZone" onclick="abrirCamara()">
       <div class="photo-icon">📷</div>
       <div class="photo-hint">Tocá para sacar foto</div>
     </div>
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handlePhoto(event)">
     <div class="ocr-status" id="ocrStatus"></div>
+  </div>
+
+  <!-- CAMARA MODAL -->
+  <div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column;">
+    <video id="videoStream" autoplay playsinline style="width:100%; flex:1; object-fit:cover;"></video>
+    <canvas id="fotoCanvas" style="display:none;"></canvas>
+    <div style="padding:20px; display:flex; gap:12px; background:#0a0a0a;">
+      <button onclick="cancelarCamara()" style="flex:1; padding:16px; background:#1e1e1e; color:#ccc; border:1px solid #333; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:15px; cursor:pointer;">Cancelar</button>
+      <button onclick="tomarFoto()" style="flex:2; padding:16px; background:#1db954; color:white; border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; cursor:pointer;">📷 SACAR FOTO</button>
+    </div>
   </div>
 
   <!-- Patente -->
@@ -585,24 +594,53 @@ function seleccionarTipo(tipo) {
   document.getElementById('btnEgreso').className = 'tipo-btn' + (tipo === 'EGRESO' ? ' selected-egreso' : '');
 }
 
-// ─── CÁMARA Y OCR ────────────────────────────────────────────────
-function triggerCamera() {
-  document.getElementById('cameraInput').click();
+// ─── CÁMARA API ──────────────────────────────────────────────────
+let streamActivo = null;
+
+async function abrirCamara() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    });
+    streamActivo = stream;
+    const video = document.getElementById('videoStream');
+    video.srcObject = stream;
+    const modal = document.getElementById('camaraModal');
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+  } catch(err) {
+    showToast('No se pudo acceder a la cámara — verificá los permisos', 'error');
+  }
 }
 
-async function handlePhoto(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+function tomarFoto() {
+  const video = document.getElementById('videoStream');
+  const canvas = document.getElementById('fotoCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
 
-  state.photoBlob = file;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    state.photoDataUrl = e.target.result;
-    mostrarFotoPreview(e.target.result);
-    procesarOCR(e.target.result);
-  };
-  reader.readAsDataURL(file);
-  event.target.value = '';
+  canvas.toBlob((blob) => {
+    state.photoBlob = blob;
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    state.photoDataUrl = dataUrl;
+    cerrarStreamCamara();
+    mostrarFotoPreview(dataUrl);
+    procesarOCR(dataUrl);
+  }, 'image/jpeg', 0.9);
+}
+
+function cancelarCamara() {
+  cerrarStreamCamara();
+}
+
+function cerrarStreamCamara() {
+  if (streamActivo) {
+    streamActivo.getTracks().forEach(t => t.stop());
+    streamActivo = null;
+  }
+  document.getElementById('camaraModal').style.display = 'none';
 }
 
 function mostrarFotoPreview(dataUrl) {
@@ -610,7 +648,7 @@ function mostrarFotoPreview(dataUrl) {
   zone.innerHTML = `
     <img src="${dataUrl}" alt="Foto patente">
     <div class="photo-overlay">
-      <button class="retake-btn" onclick="triggerCamera(); event.stopPropagation();">📷 Retomar</button>
+      <button class="retake-btn" onclick="abrirCamara(); event.stopPropagation();">📷 Retomar</button>
     </div>
   `;
   zone.classList.add('has-photo');
@@ -747,7 +785,7 @@ function limpiarFormulario() {
     <div class="photo-hint">Tocá para sacar foto</div>
   `;
   document.getElementById('photoZone').classList.remove('has-photo');
-  document.getElementById('photoZone').onclick = () => triggerCamera();
+  document.getElementById('photoZone').onclick = () => abrirCamara();
   document.getElementById('patenteInput').value = '';
   document.getElementById('conductorInput').value = '';
   document.getElementById('obsInput').value = '';
