@@ -416,12 +416,9 @@
     <input type="number" id="cuilInput" placeholder="20-12345678-9" inputmode="numeric">
   </div>
 
-  <div class="field-group">
-    <div class="field-label">Puesto</div>
-    <select id="puestoInput">
-      <option value="" disabled selected>Seleccioná tu puesto</option>
-      <option value="Puesto de prueba">Puesto de prueba</option>
-    </select>
+  <div id="puestoInfoScreen1" style="background:#1a1a1a; border-radius:8px; padding:12px 16px; border:1px solid #2a2a2a;">
+    <div style="font-size:10px; letter-spacing:2px; color:#666; text-transform:uppercase; margin-bottom:4px;">Objetivo / Puesto</div>
+    <div id="puestoInfoLabel" style="font-size:15px; font-weight:600; color:#f0f0f0;">—</div>
   </div>
 
   <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
@@ -434,7 +431,7 @@
     <div>
       <div class="info-bar-label">Vigilador</div>
       <div class="info-bar-value" id="cuilDisplay">—</div>
-      <div class="info-bar-label" style="margin-top:4px">Puesto</div>
+      <div class="info-bar-label" style="margin-top:4px">Objetivo / Puesto</div>
       <div class="info-bar-value" id="puestoDisplay">—</div>
     </div>
     <div style="text-align:right">
@@ -509,23 +506,33 @@ const CONFIG = {
 // ─── ESTADO ──────────────────────────────────────────────────────
 let state = {
   cuil: null,
+  objetivo: null,
+  puesto: null,
+  tipo: null,
   sessionTimer: null,
   sessionSeconds: CONFIG.SESSION_MINUTES * 60,
   photoBlob: null,
   photoDataUrl: null,
-  ocrWorker: null,
 };
+
+// ─── LEER URL PARAMS AL CARGAR ───────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const obj = params.get('objetivo') || 'PRUEBA';
+  const pst = params.get('puesto') || '1';
+  state.objetivo = obj.toUpperCase();
+  state.puesto = pst.toUpperCase();
+  const label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
+  document.getElementById('puestoInfoLabel').textContent = label;
+});
 
 // ─── SESIÓN ──────────────────────────────────────────────────────
 function iniciarSesion() {
   const cuil = document.getElementById('cuilInput').value.trim();
-  const puesto = document.getElementById('puestoInput').value;
   if (!cuil) { showToast('Ingresá tu CUIL', 'error'); return; }
-  if (!puesto) { showToast('Seleccioná tu puesto', 'error'); return; }
   state.cuil = cuil;
-  state.puesto = puesto;
   document.getElementById('cuilDisplay').textContent = cuil;
-  document.getElementById('puestoDisplay').textContent = puesto;
+  document.getElementById('puestoDisplay').textContent = `Obj. ${state.objetivo} — Puesto ${state.puesto}`;
   actualizarFecha();
   showScreen('screen2');
   document.getElementById('sessionTimer').style.display = 'block';
@@ -559,13 +566,12 @@ function actualizarTimerDisplay() {
 function cerrarSesion() {
   clearInterval(state.sessionTimer);
   state.cuil = null;
-  state.puesto = null;
   state.photoBlob = null;
   state.photoDataUrl = null;
+  state.tipo = null;
   document.getElementById('sessionTimer').style.display = 'none';
   limpiarFormulario();
   document.getElementById('cuilInput').value = '';
-  document.getElementById('puestoInput').value = '';
   showScreen('screen1');
 }
 
@@ -697,6 +703,7 @@ async function enviarRegistro() {
       cuil: state.cuil,
       fecha,
       hora,
+      objetivo: state.objetivo || '',
       puesto: state.puesto || '',
       tipo,
       patente,
