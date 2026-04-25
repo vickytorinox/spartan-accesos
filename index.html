@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Spartan Accesos</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --black: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --red: #1db954;
+    --red-dark: #158a3e;
+    --green: #1db954;
+    --green-dark: #158a3e;
+    --text: #f0f0f0;
+    --muted: #666;
+    --accent: #1db954;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--red);
+  }
+  .session-timer {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 1px;
+    display: none;
+  }
+  .session-timer.warning { color: #f59e0b; }
+  .session-timer.critical { color: var(--red); animation: pulse 1s infinite; }
+
+  /* ─── SCREENS ─── */
+  .screen {
+    width: 100%;
+    max-width: 480px;
+    padding: 90px 24px 40px;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 100dvh;
+  }
+  .screen.active { display: flex; }
+
+  /* ─── SCREEN 1 ─── */
+  .brand-block {
+    text-align: center;
+    padding: 20px 0 10px;
+  }
+  .brand-block .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 6px;
+    color: var(--red);
+    line-height: 1;
+  }
+  .brand-block .subtitle {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 8px; }
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  input[type="text"], input[type="number"], textarea, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--red);
+  }
+  input[type="number"] { -moz-appearance: textfield; }
+
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-primary {
+    background: var(--red);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--red-dark); }
+  .btn-primary:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+
+  /* ─── SCREEN 2 ─── */
+  .photo-zone {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .photo-zone:active { border-color: var(--red); }
+  .photo-zone.has-photo { border-style: solid; border-color: var(--border); }
+  .photo-zone img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0; left: 0;
+    border-radius: 10px;
+  }
+  .photo-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .retake-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .photo-icon { font-size: 36px; opacity: 0.4; }
+  .photo-hint { font-size: 13px; color: var(--muted); text-align: center; }
+
+  .ocr-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 20px;
+  }
+  .ocr-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  .patente-field {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 6px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .patente-field::placeholder {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    opacity: 0.3;
+    text-transform: none;
+  }
+
+  /* Tipo selector */
+  .tipo-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .tipo-option {
+    position: relative;
+  }
+  .tipo-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+  .tipo-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+  .tipo-label .tipo-icon { font-size: 22px; }
+  .tipo-option input:checked + .tipo-label.ingreso {
+    background: rgba(29, 185, 84, 0.1);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .tipo-option input:checked + .tipo-label.egreso {
+    background: rgba(230, 48, 48, 0.1);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* Hidden file input */
+  #cameraInput { display: none; }
+
+  /* Info bar screen 2 */
+  .info-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .info-bar-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+  .info-bar-value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  textarea {
+    resize: none;
+    height: 80px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">SPARTAN</div>
+  <div class="session-timer" id="sessionTimer">SESIÓN: 10:00</div>
+</div>
+
+<!-- SCREEN 1: CUIL -->
+<div class="screen active" id="screen1">
+  <div class="brand-block">
+    <div class="title">ACCESOS</div>
+    <div class="subtitle">Control de vehículos</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="field-group">
+    <div class="field-label">CUIL del vigilador</div>
+    <input type="number" id="cuilInput" placeholder="20-12345678-9" inputmode="numeric">
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">Puesto</div>
+    <select id="puestoInput">
+      <option value="" disabled selected>Seleccioná tu puesto</option>
+      <option value="Puesto de prueba">Puesto de prueba</option>
+    </select>
+  </div>
+
+  <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+</div>
+
+<!-- SCREEN 2: REGISTRO -->
+<div class="screen" id="screen2">
+
+  <div class="info-bar">
+    <div>
+      <div class="info-bar-label">Vigilador</div>
+      <div class="info-bar-value" id="cuilDisplay">—</div>
+      <div class="info-bar-label" style="margin-top:4px">Puesto</div>
+      <div class="info-bar-value" id="puestoDisplay">—</div>
+    </div>
+    <div style="text-align:right">
+      <div class="info-bar-label">Fecha / Hora</div>
+      <div class="info-bar-value" id="fechaDisplay">—</div>
+    </div>
+  </div>
+
+  <!-- Foto -->
+  <div class="field-group">
+    <div class="field-label">Foto de la patente</div>
+    <div class="photo-zone" id="photoZone" onclick="triggerCamera()">
+      <div class="photo-icon">📷</div>
+      <div class="photo-hint">Tocá para sacar foto</div>
+    </div>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handlePhoto(event)">
+    <div class="ocr-status" id="ocrStatus"></div>
+  </div>
+
+  <!-- Patente -->
+  <div class="field-group">
+    <div class="field-label">Patente (verificar y corregir)</div>
+    <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB 123 CD" maxlength="10">
+  </div>
+
+  <!-- Tipo -->
+  <div class="field-group">
+    <div class="field-label">Tipo de movimiento</div>
+    <div class="tipo-selector">
+      <div class="tipo-option">
+        <input type="radio" name="tipo" id="tipoIngreso" value="INGRESO">
+        <label class="tipo-label ingreso" for="tipoIngreso">
+          <span class="tipo-icon">🟢</span>
+          INGRESO
+        </label>
+      </div>
+      <div class="tipo-option">
+        <input type="radio" name="tipo" id="tipoEgreso" value="EGRESO">
+        <label class="tipo-label egreso" for="tipoEgreso">
+          <span class="tipo-icon">🔴</span>
+          EGRESO
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conductor -->
+  <div class="field-group">
+    <div class="field-label">Nombre del conductor</div>
+    <input type="text" id="conductorInput" placeholder="Apellido y nombre">
+  </div>
+
+  <!-- Observaciones -->
+  <div class="field-group">
+    <div class="field-label">Observaciones</div>
+    <textarea id="obsInput" placeholder="Opcional"></textarea>
+  </div>
+
+  <button class="btn btn-primary" id="enviarBtn" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
+  <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
+
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Procesando...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIGURACIÓN ───────────────────────────────────────────────
+const CONFIG = {
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzgcLn-Cv-L58NXnOLVyewv_AkiR4SAfr9wJRFWSb7nJV_nNyl6vK38KwLcLsPRwZMhxg/exec',
+  SESSION_MINUTES: 10,
+};
+
+// ─── ESTADO ──────────────────────────────────────────────────────
+let state = {
+  cuil: null,
+  sessionTimer: null,
+  sessionSeconds: CONFIG.SESSION_MINUTES * 60,
+  photoBlob: null,
+  photoDataUrl: null,
+  ocrWorker: null,
+};
+
+// ─── SESIÓN ──────────────────────────────────────────────────────
+function iniciarSesion() {
+  const cuil = document.getElementById('cuilInput').value.trim();
+  const puesto = document.getElementById('puestoInput').value;
+  if (!cuil) { showToast('Ingresá tu CUIL', 'error'); return; }
+  if (!puesto) { showToast('Seleccioná tu puesto', 'error'); return; }
+  state.cuil = cuil;
+  state.puesto = puesto;
+  document.getElementById('cuilDisplay').textContent = cuil;
+  document.getElementById('puestoDisplay').textContent = puesto;
+  actualizarFecha();
+  showScreen('screen2');
+  document.getElementById('sessionTimer').style.display = 'block';
+  iniciarTimer();
+}
+
+function iniciarTimer() {
+  state.sessionSeconds = CONFIG.SESSION_MINUTES * 60;
+  clearInterval(state.sessionTimer);
+  state.sessionTimer = setInterval(() => {
+    state.sessionSeconds--;
+    actualizarTimerDisplay();
+    if (state.sessionSeconds <= 0) cerrarSesion();
+  }, 1000);
+}
+
+function resetTimer() {
+  state.sessionSeconds = CONFIG.SESSION_MINUTES * 60;
+}
+
+function actualizarTimerDisplay() {
+  const m = Math.floor(state.sessionSeconds / 60);
+  const s = state.sessionSeconds % 60;
+  const el = document.getElementById('sessionTimer');
+  el.textContent = `SESIÓN: ${m}:${s.toString().padStart(2,'0')}`;
+  el.className = 'session-timer';
+  if (state.sessionSeconds <= 60) el.classList.add('critical');
+  else if (state.sessionSeconds <= 180) el.classList.add('warning');
+}
+
+function cerrarSesion() {
+  clearInterval(state.sessionTimer);
+  state.cuil = null;
+  state.puesto = null;
+  state.photoBlob = null;
+  state.photoDataUrl = null;
+  document.getElementById('sessionTimer').style.display = 'none';
+  limpiarFormulario();
+  document.getElementById('cuilInput').value = '';
+  document.getElementById('puestoInput').value = '';
+  showScreen('screen1');
+}
+
+// Reset timer on any interaction
+document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
+document.addEventListener('click', () => { if (state.cuil) resetTimer(); });
+
+// ─── CÁMARA Y OCR ────────────────────────────────────────────────
+function triggerCamera() {
+  document.getElementById('cameraInput').click();
+}
+
+async function handlePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  state.photoBlob = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    state.photoDataUrl = e.target.result;
+    mostrarFotoPreview(e.target.result);
+    procesarOCR(e.target.result);
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function mostrarFotoPreview(dataUrl) {
+  const zone = document.getElementById('photoZone');
+  zone.innerHTML = `
+    <img src="${dataUrl}" alt="Foto patente">
+    <div class="photo-overlay">
+      <button class="retake-btn" onclick="triggerCamera(); event.stopPropagation();">📷 Retomar</button>
+    </div>
+  `;
+  zone.classList.add('has-photo');
+  zone.onclick = null;
+}
+
+async function procesarOCR(dataUrl) {
+  const statusEl = document.getElementById('ocrStatus');
+  statusEl.innerHTML = '<div class="ocr-spinner"></div> Leyendo patente...';
+
+  try {
+    const worker = await Tesseract.createWorker('eng', 1, {
+      logger: () => {}
+    });
+
+    await worker.setParameters({
+      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+    });
+
+    const { data: { text } } = await worker.recognize(dataUrl);
+    await worker.terminate();
+
+    // Limpiar y extraer patente
+    const cleaned = text.replace(/[^A-Z0-9]/g, '').trim();
+    const patente = extraerPatente(cleaned);
+
+    if (patente) {
+      document.getElementById('patenteInput').value = patente;
+      statusEl.innerHTML = '✅ Patente detectada — verificá y corregí si es necesario';
+      statusEl.style.color = '#1db954';
+    } else {
+      statusEl.innerHTML = '⚠️ No se pudo leer — ingresá manualmente';
+      statusEl.style.color = '#f59e0b';
+    }
+  } catch (err) {
+    statusEl.innerHTML = '⚠️ Error OCR — ingresá manualmente';
+    statusEl.style.color = '#f59e0b';
+  }
+}
+
+function extraerPatente(texto) {
+  // Formato nuevo: 3 letras + 3 números (AB123CD) o viejo: 3 letras + 3 números
+  // Argentina nueva: AAA000 o AA000AA
+  const patterns = [
+    /[A-Z]{2}\d{3}[A-Z]{2}/,  // nuevo: AB123CD
+    /[A-Z]{3}\d{3}/,            // viejo: ABC123
+  ];
+  for (const p of patterns) {
+    const m = texto.match(p);
+    if (m) return m[0];
+  }
+  // Si no matchea ningún patrón pero tiene 6-7 chars, devolver igual
+  if (texto.length >= 6 && texto.length <= 7) return texto;
+  return null;
+}
+
+// ─── ENVÍO ───────────────────────────────────────────────────────
+async function enviarRegistro() {
+  const patente = document.getElementById('patenteInput').value.trim().toUpperCase();
+  const conductor = document.getElementById('conductorInput').value.trim();
+  const obs = document.getElementById('obsInput').value.trim();
+  const tipoEl = document.querySelector('input[name="tipo"]:checked');
+
+  if (!state.photoBlob) { showToast('Sacá una foto de la patente', 'error'); return; }
+  if (!patente) { showToast('Ingresá la patente', 'error'); return; }
+  if (!tipoEl) { showToast('Seleccioná INGRESO o EGRESO', 'error'); return; }
+  if (!conductor) { showToast('Ingresá el nombre del conductor', 'error'); return; }
+
+  const tipo = tipoEl.value;
+  const ahora = new Date();
+  const fecha = formatFecha(ahora);
+  const hora = formatHora(ahora);
+
+  showLoading('Enviando registro...');
+
+  try {
+    // Obtener ubicación
+    let latitud = '', longitud = '';
+    try {
+      const pos = await getLocation();
+      latitud = pos.coords.latitude.toFixed(6);
+      longitud = pos.coords.longitude.toFixed(6);
+    } catch(e) { /* ubicación opcional */ }
+
+    // Convertir foto a base64
+    const fotoBase64 = await blobToBase64(state.photoBlob);
+    const fotoExt = state.photoBlob.type.split('/')[1] || 'jpg';
+    const nombreFoto = `${fecha}_${hora.replace(':','')}_${patente}.${fotoExt}`;
+
+    const payload = {
+      cuil: state.cuil,
+      fecha,
+      hora,
+      puesto: state.puesto || '',
+      tipo,
+      patente,
+      conductor,
+      observaciones: obs,
+      latitud,
+      longitud,
+      fotoBase64,
+      fotoExt,
+      nombreFoto,
+    };
+
+    const resp = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    const result = await resp.json();
+
+    if (result.success) {
+      hideLoading();
+      showToast('✅ Registro guardado', 'success');
+      setTimeout(() => {
+        limpiarFormulario();
+        cerrarSesion();
+      }, 1500);
+    } else {
+      throw new Error(result.error || 'Error desconocido');
+    }
+
+  } catch(err) {
+    hideLoading();
+    showToast('Error al enviar: ' + err.message, 'error');
+  }
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────
+function limpiarFormulario() {
+  document.getElementById('photoZone').innerHTML = `
+    <div class="photo-icon">📷</div>
+    <div class="photo-hint">Tocá para sacar foto</div>
+  `;
+  document.getElementById('photoZone').classList.remove('has-photo');
+  document.getElementById('photoZone').onclick = () => triggerCamera();
+  document.getElementById('patenteInput').value = '';
+  document.getElementById('conductorInput').value = '';
+  document.getElementById('obsInput').value = '';
+  document.getElementById('ocrStatus').innerHTML = '';
+  document.getElementById('ocrStatus').style.color = '';
+  const radios = document.querySelectorAll('input[name="tipo"]');
+  radios.forEach(r => r.checked = false);
+  state.photoBlob = null;
+  state.photoDataUrl = null;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function actualizarFecha() {
+  const ahora = new Date();
+  document.getElementById('fechaDisplay').textContent =
+    `${formatFecha(ahora)} ${formatHora(ahora)}`;
+}
+
+function formatFecha(d) {
+  return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+}
+function formatHora(d) {
+  return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+}
+
+function getLocation() {
+  return new Promise((res, rej) =>
+    navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+  );
+}
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+let toastTimeout;
+function showToast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+function showLoading(text = 'Procesando...') {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// Actualizar hora cada minuto en screen2
+setInterval(() => { if (state.cuil) actualizarFecha(); }, 60000);
+</script>
+</body>
+</html>
