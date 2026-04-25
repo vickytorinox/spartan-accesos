@@ -287,7 +287,7 @@
   <div class="section-title">URL base de la app</div>
   <div class="config-bar">
     <label>URL Base</label>
-    <input type="text" id="baseUrlInput" placeholder="https://tu-usuario.github.io/spartan-accesos/" oninput="guardarConfig()">
+    <input type="text" id="baseUrlInput" placeholder="https://vickytorinox.github.io/spartan-accesos/" oninput="guardarConfig()">
     <span style="font-size:12px; color:#4a7a5c;">Modificá con tu URL real de GitHub Pages</span>
   </div>
 
@@ -418,7 +418,7 @@ function toggleObjetivo(idx) {
 // ─── RENDER ───────────────────────────────────────────────────
 function renderAll() {
   const data = cargarDatos();
-  const baseUrl = data.baseUrl || 'https://TU-USUARIO.github.io/spartan-accesos/';
+  const baseUrl = data.baseUrl || 'https://vickytorinox.github.io/spartan-accesos/';
   const container = document.getElementById('objetivosList');
 
   if (data.objetivos.length === 0) {
