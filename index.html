@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -13,407 +14,419 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-  :root {
-    --black: #0a0a0a;
-    --surface: #141414;
-    --surface2: #1e1e1e;
-    --border: #2a2a2a;
-    --green: #1db954;
-    --green-dark: #158a3e;
-    --text: #f0f0f0;
-    --muted: #666;
-    --accent: #1db954;
+:root {
+–black: #0a0a0a;
+–surface: #141414;
+–surface2: #1e1e1e;
+–border: #2a2a2a;
+–green: #1db954;
+–green-dark: #158a3e;
+–text: #f0f0f0;
+–muted: #666;
+–accent: #1db954;
 
-    /* Screen 2 light theme */
-    --s2-bg: #f0faf4;
-    --s2-surface: #ffffff;
-    --s2-border: #b8e0c8;
-    --s2-text: #0f1f16;
-    --s2-muted: #4a7a5c;
-    --s2-header-bg: #1a1a1a;
-  }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Screen 2 light theme */
+--s2-bg: #f0faf4;
+--s2-surface: #ffffff;
+--s2-border: #b8e0c8;
+--s2-text: #0f1f16;
+--s2-muted: #4a7a5c;
+--s2-header-bg: #1a1a1a;
 
-  body {
-    background: var(--black);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow-x: hidden;
-  }
 
-  /* ─── HEADER ─── */
-  .header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    background: var(--black);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 100;
-  }
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 3px;
-    color: var(--red);
-  }
-  .session-timer {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-    letter-spacing: 1px;
-    display: none;
-  }
-  .session-timer.warning { color: #f59e0b; }
-  .session-timer.critical { color: var(--red); animation: pulse 1s infinite; }
+}
 
-  /* ─── SCREENS ─── */
-  .screen {
-    width: 100%;
-    max-width: 480px;
-    padding: 90px 24px 40px;
-    display: none;
-    flex-direction: column;
-    gap: 20px;
-    min-height: 100dvh;
-  }
-  .screen.active { display: flex; }
+- { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ─── SCREEN 1 ─── */
-  .brand-block {
-    text-align: center;
-    padding: 20px 0 10px;
-  }
-  .brand-block .title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 52px;
-    letter-spacing: 6px;
-    color: var(--red);
-    line-height: 1;
-  }
-  .brand-block .subtitle {
-    font-size: 11px;
-    letter-spacing: 4px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
+body {
+background: var(–black);
+color: var(–text);
+font-family: ‘DM Sans’, sans-serif;
+min-height: 100vh;
+min-height: 100dvh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+overflow-x: hidden;
+}
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
+/* ─── HEADER ─── */
+.header {
+position: fixed;
+top: 0; left: 0; right: 0;
+background: var(–black);
+border-bottom: 1px solid var(–border);
+padding: 14px 20px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+z-index: 100;
+}
+.logo {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 22px;
+letter-spacing: 3px;
+color: var(–red);
+}
+.session-timer {
+font-size: 12px;
+color: var(–muted);
+font-weight: 500;
+letter-spacing: 1px;
+display: none;
+}
+.session-timer.warning { color: #f59e0b; }
+.session-timer.critical { color: var(–red); animation: pulse 1s infinite; }
 
-  .field-group { display: flex; flex-direction: column; gap: 8px; }
-  .field-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 600;
-  }
+/* ─── SCREENS ─── */
+.screen {
+width: 100%;
+max-width: 480px;
+padding: 90px 24px 40px;
+display: none;
+flex-direction: column;
+gap: 20px;
+min-height: 100dvh;
+}
+.screen.active { display: flex; }
 
-  input[type="text"], input[type="number"], textarea, select {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--red);
-  }
-  input[type="number"] { -moz-appearance: textfield; }
+/* ─── SCREEN 1 ─── */
+.brand-block {
+text-align: center;
+padding: 20px 0 10px;
+}
+.brand-block .title {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 52px;
+letter-spacing: 6px;
+color: var(–red);
+line-height: 1;
+}
+.brand-block .subtitle {
+font-size: 11px;
+letter-spacing: 4px;
+color: var(–muted);
+text-transform: uppercase;
+margin-top: 6px;
+}
 
-  .btn {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 3px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn:active { transform: scale(0.98); }
+.divider {
+height: 1px;
+background: var(–border);
+margin: 4px 0;
+}
 
-  .btn-primary {
-    background: var(--green);
-    color: white;
-  }
-  .btn-primary:hover { background: var(--green-dark); }
-  .btn-primary:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+.field-group { display: flex; flex-direction: column; gap: 8px; }
+.field-label {
+font-size: 10px;
+letter-spacing: 3px;
+text-transform: uppercase;
+color: var(–muted);
+font-weight: 600;
+}
 
-  .btn-secondary {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1px;
-  }
+input[type=“text”], input[type=“number”], textarea, select {
+width: 100%;
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 14px 16px;
+color: var(–text);
+font-family: ‘DM Sans’, sans-serif;
+font-size: 16px;
+outline: none;
+transition: border-color 0.2s;
+appearance: none;
+-webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus {
+border-color: var(–red);
+}
+input[type=“number”] { -moz-appearance: textfield; }
 
-  /* ─── SCREEN 2 LIGHT THEME ─── */
-  #screen2 {
-    background: var(--s2-bg);
-    color: var(--s2-text);
-  }
-  #screen2 .field-label { color: var(--s2-muted); }
-  #screen2 input, #screen2 textarea, #screen2 select {
-    background: var(--s2-surface);
-    border-color: var(--s2-border);
-    color: var(--s2-text);
-  }
-  #screen2 input:focus, #screen2 textarea:focus, #screen2 select:focus {
-    border-color: var(--green);
-  }
-  #screen2 .info-bar {
-    background: var(--s2-header-bg);
-    border-color: #333;
-  }
-  #screen2 .info-bar .info-bar-label { color: #888; }
-  #screen2 .info-bar .info-bar-value { color: #f0f0f0; }
-  #screen2 .photo-zone {
-    background: var(--s2-surface);
-    border-color: var(--s2-border);
-  }
-  #screen2 .tipo-label {
-    background: var(--s2-surface);
-    border-color: var(--s2-border);
-    color: var(--s2-text);
-  }
-  #screen2 .btn-secondary {
-    background: #e0e0e0;
-    color: #333;
-    border-color: #ccc;
-  }
-  .photo-zone {
-    background: var(--surface);
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    min-height: 180px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .photo-zone:active { border-color: var(--red); }
-  .photo-zone.has-photo { border-style: solid; border-color: var(--border); }
-  .photo-zone img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0; left: 0;
-    border-radius: 10px;
-  }
-  .photo-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    padding: 16px;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .retake-btn {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    backdrop-filter: blur(4px);
-  }
-  .photo-icon { font-size: 36px; opacity: 0.4; }
-  .photo-hint { font-size: 13px; color: var(--muted); text-align: center; }
+.btn {
+width: 100%;
+padding: 16px;
+border: none;
+border-radius: 8px;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 20px;
+letter-spacing: 3px;
+cursor: pointer;
+transition: all 0.15s;
+position: relative;
+overflow: hidden;
+}
+.btn:active { transform: scale(0.98); }
 
-  .ocr-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--muted);
-    min-height: 20px;
-  }
-  .ocr-spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--border);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
+.btn-primary {
+background: var(–green);
+color: white;
+}
+.btn-primary:hover { background: var(–green-dark); }
+.btn-primary:disabled { background: var(–surface2); color: var(–muted); cursor: not-allowed; }
 
-  .patente-field {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 6px;
-    text-align: center;
-    text-transform: uppercase;
-  }
-  .patente-field::placeholder {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    letter-spacing: 1px;
-    opacity: 0.3;
-    text-transform: none;
-  }
+.btn-secondary {
+background: var(–surface2);
+color: var(–text);
+border: 1px solid var(–border);
+font-family: ‘DM Sans’, sans-serif;
+font-size: 14px;
+font-weight: 500;
+letter-spacing: 1px;
+}
 
-  /* Tipo selector */
-  .tipo-selector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .tipo-option {
-    position: relative;
-  }
-  .tipo-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 0; height: 0;
-  }
-  .tipo-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 16px;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 2px;
-  }
-  .tipo-label .tipo-icon { font-size: 22px; }
-  .tipo-option input:checked + .tipo-label.ingreso {
-    background: rgba(29, 185, 84, 0.1);
-    border-color: var(--green);
-    color: var(--green);
-  }
-  .tipo-option input:checked + .tipo-label.egreso {
-    background: rgba(230, 48, 48, 0.1);
-    border-color: var(--red);
-    color: var(--red);
-  }
+/* ─── SCREEN 2 LIGHT THEME ─── */
+#screen2 {
+background: var(–s2-bg);
+color: var(–s2-text);
+}
+#screen2 .field-label { color: var(–s2-muted); }
+#screen2 input, #screen2 textarea, #screen2 select {
+background: var(–s2-surface);
+border-color: var(–s2-border);
+color: var(–s2-text);
+}
+#screen2 input:focus, #screen2 textarea:focus, #screen2 select:focus {
+border-color: var(–green);
+}
+#screen2 .info-bar {
+background: var(–s2-header-bg);
+border-color: #333;
+}
+#screen2 .info-bar .info-bar-label { color: #888; }
+#screen2 .info-bar .info-bar-value { color: #f0f0f0; }
+#screen2 .photo-zone {
+background: var(–s2-surface);
+border-color: var(–s2-border);
+}
+#screen2 .tipo-label {
+background: var(–s2-surface);
+border-color: var(–s2-border);
+color: var(–s2-text);
+}
+#screen2 .btn-secondary {
+background: #e0e0e0;
+color: #333;
+border-color: #ccc;
+}
+.photo-zone {
+background: var(–surface);
+border: 2px dashed var(–border);
+border-radius: 12px;
+min-height: 180px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 10px;
+cursor: pointer;
+transition: border-color 0.2s;
+position: relative;
+overflow: hidden;
+}
+.photo-zone:active { border-color: var(–red); }
+.photo-zone.has-photo { border-style: solid; border-color: var(–border); }
+.photo-zone img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+position: absolute;
+top: 0; left: 0;
+border-radius: 10px;
+}
+.photo-overlay {
+position: absolute;
+bottom: 0; left: 0; right: 0;
+background: linear-gradient(transparent, rgba(0,0,0,0.8));
+padding: 16px;
+display: flex;
+justify-content: flex-end;
+}
+.retake-btn {
+background: rgba(255,255,255,0.15);
+border: 1px solid rgba(255,255,255,0.3);
+color: white;
+padding: 6px 14px;
+border-radius: 20px;
+font-size: 12px;
+font-family: ‘DM Sans’, sans-serif;
+cursor: pointer;
+backdrop-filter: blur(4px);
+}
+.photo-icon { font-size: 36px; opacity: 0.4; }
+.photo-hint { font-size: 13px; color: var(–muted); text-align: center; }
 
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    z-index: 999;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    white-space: nowrap;
-    max-width: 90vw;
-    text-align: center;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: var(--green); color: var(--green); }
-  .toast.error { border-color: var(--red); color: var(--red); }
+.ocr-status {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 12px;
+color: var(–muted);
+min-height: 20px;
+}
+.ocr-spinner {
+width: 14px; height: 14px;
+border: 2px solid var(–border);
+border-top-color: var(–red);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+flex-shrink: 0;
+}
 
-  /* Loading overlay */
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(10,10,10,0.85);
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    z-index: 200;
-    backdrop-filter: blur(4px);
-  }
-  .loading-overlay.show { display: flex; }
-  .loading-spinner {
-    width: 44px; height: 44px;
-    border: 3px solid var(--border);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .loading-text {
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+.patente-field {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 28px;
+letter-spacing: 6px;
+text-align: center;
+text-transform: uppercase;
+}
+.patente-field::placeholder {
+font-family: ‘DM Sans’, sans-serif;
+font-size: 14px;
+letter-spacing: 1px;
+opacity: 0.3;
+text-transform: none;
+}
 
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+/* Tipo selector */
+.tipo-selector {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
+.tipo-option {
+position: relative;
+cursor: pointer;
+}
+.tipo-option input[type=“radio”] {
+position: absolute;
+opacity: 0;
+width: 100%;
+height: 100%;
+top: 0; left: 0;
+margin: 0;
+cursor: pointer;
+z-index: 2;
+}
+.tipo-label {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 6px;
+padding: 16px;
+background: var(–surface);
+border: 2px solid var(–border);
+border-radius: 10px;
+cursor: pointer;
+transition: all 0.15s;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 18px;
+letter-spacing: 2px;
+}
+.tipo-label .tipo-icon { font-size: 22px; }
+.tipo-option input:checked + .tipo-label.ingreso {
+background: rgba(29, 185, 84, 0.1);
+border-color: var(–green);
+color: var(–green);
+}
+.tipo-option input:checked + .tipo-label.egreso {
+background: rgba(230, 48, 48, 0.1);
+border-color: var(–red);
+color: var(–red);
+}
 
-  /* Hidden file input */
-  #cameraInput { display: none; }
+/* Toast */
+.toast {
+position: fixed;
+bottom: 30px;
+left: 50%;
+transform: translateX(-50%) translateY(100px);
+background: var(–surface2);
+border: 1px solid var(–border);
+border-radius: 10px;
+padding: 14px 24px;
+font-size: 14px;
+font-weight: 500;
+z-index: 999;
+transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+white-space: nowrap;
+max-width: 90vw;
+text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(–green); color: var(–green); }
+.toast.error { border-color: var(–red); color: var(–red); }
 
-  /* Info bar screen 2 */
-  .info-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .info-bar-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
-  .info-bar-value { font-size: 13px; font-weight: 600; color: var(--text); }
+/* Loading overlay */
+.loading-overlay {
+position: fixed;
+inset: 0;
+background: rgba(10,10,10,0.85);
+display: none;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 16px;
+z-index: 200;
+backdrop-filter: blur(4px);
+}
+.loading-overlay.show { display: flex; }
+.loading-spinner {
+width: 44px; height: 44px;
+border: 3px solid var(–border);
+border-top-color: var(–red);
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+}
+.loading-text {
+font-size: 13px;
+color: var(–muted);
+letter-spacing: 2px;
+text-transform: uppercase;
+}
 
-  textarea {
-    resize: none;
-    height: 80px;
-    line-height: 1.5;
-  }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Hidden file input */
+#cameraInput { display: none; }
+
+/* Info bar screen 2 */
+.info-bar {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 10px 14px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+.info-bar-label { font-size: 10px; letter-spacing: 2px; color: var(–muted); text-transform: uppercase; }
+.info-bar-value { font-size: 13px; font-weight: 600; color: var(–text); }
+
+textarea {
+resize: none;
+height: 80px;
+line-height: 1.5;
+}
 </style>
+
 </head>
 <body>
 
 <!-- HEADER -->
+
 <div class="header">
   <div class="logo">SPARTAN</div>
   <div class="session-timer" id="sessionTimer">SESIÓN: 10:00</div>
 </div>
 
 <!-- SCREEN 1: CUIL -->
+
 <div class="screen active" id="screen1">
   <div class="brand-block">
     <div class="title">ACCESOS</div>
@@ -435,10 +448,12 @@
     </select>
   </div>
 
-  <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+<button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+
 </div>
 
 <!-- SCREEN 2: REGISTRO -->
+
 <div class="screen" id="screen2">
 
   <div class="info-bar">
@@ -455,6 +470,7 @@
   </div>
 
   <!-- Foto -->
+
   <div class="field-group">
     <div class="field-label">Foto de la patente</div>
     <div class="photo-zone" id="photoZone" onclick="triggerCamera()">
@@ -466,12 +482,14 @@
   </div>
 
   <!-- Patente -->
+
   <div class="field-group">
     <div class="field-label">Patente (verificar y corregir)</div>
     <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB 123 CD" maxlength="10">
   </div>
 
   <!-- Tipo -->
+
   <div class="field-group">
     <div class="field-label">Tipo de movimiento</div>
     <div class="tipo-selector">
@@ -493,29 +511,33 @@
   </div>
 
   <!-- Conductor -->
+
   <div class="field-group">
     <div class="field-label">Nombre del conductor</div>
     <input type="text" id="conductorInput" placeholder="Apellido y nombre">
   </div>
 
   <!-- Observaciones -->
+
   <div class="field-group">
     <div class="field-label">Observaciones</div>
     <textarea id="obsInput" placeholder="Opcional"></textarea>
   </div>
 
-  <button class="btn btn-primary" id="enviarBtn" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
-  <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
+<button class="btn btn-primary" id="enviarBtn" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
+<button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
 
 </div>
 
 <!-- LOADING -->
+
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loadingText">Procesando...</div>
 </div>
 
 <!-- TOAST -->
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -569,7 +591,7 @@ function actualizarTimerDisplay() {
   const m = Math.floor(state.sessionSeconds / 60);
   const s = state.sessionSeconds % 60;
   const el = document.getElementById('sessionTimer');
-  el.textContent = `SESIÓN: ${m}:${s.toString().padStart(2,'0')}`;
+  el.textContent = SESIÓN: ${m}:${s.toString().padStart(2,'0')};
   el.className = 'session-timer';
   if (state.sessionSeconds <= 60) el.classList.add('critical');
   else if (state.sessionSeconds <= 180) el.classList.add('warning');
@@ -705,7 +727,7 @@ async function enviarRegistro() {
     // Convertir foto a base64
     const fotoBase64 = await blobToBase64(state.photoBlob);
     const fotoExt = state.photoBlob.type.split('/')[1] || 'jpg';
-    const nombreFoto = `${fecha}_${hora.replace(':','')}_${patente}.${fotoExt}`;
+    const nombreFoto = ${fecha}_${hora.replace(':','')}_${patente}.${fotoExt};
 
     const payload = {
       cuil: state.cuil,
@@ -774,14 +796,14 @@ function showScreen(id) {
 function actualizarFecha() {
   const ahora = new Date();
   document.getElementById('fechaDisplay').textContent =
-    `${formatFecha(ahora)} ${formatHora(ahora)}`;
+    ${formatFecha(ahora)} ${formatHora(ahora)};
 }
 
 function formatFecha(d) {
-  return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+  return ${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()};
 }
 function formatHora(d) {
-  return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+  return ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')};
 }
 
 function getLocation() {
@@ -819,5 +841,6 @@ function hideLoading() {
 // Actualizar hora cada minuto en screen2
 setInterval(() => { if (state.cuil) actualizarFecha(); }, 60000);
 </script>
+
 </body>
 </html>
