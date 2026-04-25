@@ -293,46 +293,29 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
-  .tipo-option {
-    position: relative;
-    cursor: pointer;
-  }
-  .tipo-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    top: 0; left: 0;
-    margin: 0;
-    cursor: pointer;
-    z-index: 2;
-  }
-  .tipo-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 16px;
-    background: var(--surface);
-    border: 2px solid var(--border);
+  .tipo-btn {
+    padding: 18px 10px;
+    border: 2px solid var(--s2-border);
     border-radius: 10px;
+    background: var(--s2-surface);
+    color: var(--s2-text);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.15s;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 2px;
+    -webkit-appearance: none;
   }
-  .tipo-label .tipo-icon { font-size: 22px; }
-  .tipo-option input:checked + .tipo-label.ingreso {
-    background: rgba(29, 185, 84, 0.1);
-    border-color: var(--green);
-    color: var(--green);
+  .tipo-btn:active { transform: scale(0.97); }
+  .tipo-btn.selected-ingreso {
+    background: #d4f5e2;
+    border-color: #1db954;
+    color: #0f5c2a;
   }
-  .tipo-option input:checked + .tipo-label.egreso {
-    background: rgba(230, 48, 48, 0.1);
-    border-color: var(--red);
-    color: var(--red);
+  .tipo-btn.selected-egreso {
+    background: #fde8e8;
+    border-color: #e63030;
+    color: #7f1d1d;
   }
 
   /* Toast */
@@ -481,20 +464,12 @@
   <div class="field-group">
     <div class="field-label">Tipo de movimiento</div>
     <div class="tipo-selector">
-      <div class="tipo-option">
-        <input type="radio" name="tipo" id="tipoIngreso" value="INGRESO">
-        <label class="tipo-label ingreso" for="tipoIngreso">
-          <span class="tipo-icon">🟢</span>
-          INGRESO
-        </label>
-      </div>
-      <div class="tipo-option">
-        <input type="radio" name="tipo" id="tipoEgreso" value="EGRESO">
-        <label class="tipo-label egreso" for="tipoEgreso">
-          <span class="tipo-icon">🔴</span>
-          EGRESO
-        </label>
-      </div>
+      <button type="button" class="tipo-btn" id="btnIngreso" onclick="seleccionarTipo('INGRESO')">
+        🟢 INGRESO
+      </button>
+      <button type="button" class="tipo-btn" id="btnEgreso" onclick="seleccionarTipo('EGRESO')">
+        🔴 EGRESO
+      </button>
     </div>
   </div>
 
@@ -598,6 +573,12 @@ function cerrarSesion() {
 document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
 document.addEventListener('click', () => { if (state.cuil) resetTimer(); });
 
+function seleccionarTipo(tipo) {
+  state.tipo = tipo;
+  document.getElementById('btnIngreso').className = 'tipo-btn' + (tipo === 'INGRESO' ? ' selected-ingreso' : '');
+  document.getElementById('btnEgreso').className = 'tipo-btn' + (tipo === 'EGRESO' ? ' selected-egreso' : '');
+}
+
 // ─── CÁMARA Y OCR ────────────────────────────────────────────────
 function triggerCamera() {
   document.getElementById('cameraInput').click();
@@ -685,14 +666,13 @@ async function enviarRegistro() {
   const patente = document.getElementById('patenteInput').value.trim().toUpperCase();
   const conductor = document.getElementById('conductorInput').value.trim();
   const obs = document.getElementById('obsInput').value.trim();
-  const tipoEl = document.querySelector('input[name="tipo"]:checked');
 
   if (!state.photoBlob) { showToast('Sacá una foto de la patente', 'error'); return; }
   if (!patente) { showToast('Ingresá la patente', 'error'); return; }
-  if (!tipoEl) { showToast('Seleccioná INGRESO o EGRESO', 'error'); return; }
+  if (!state.tipo) { showToast('Seleccioná INGRESO o EGRESO', 'error'); return; }
   if (!conductor) { showToast('Ingresá el nombre del conductor', 'error'); return; }
 
-  const tipo = tipoEl.value;
+  const tipo = state.tipo;
   const ahora = new Date();
   const fecha = formatFecha(ahora);
   const hora = formatHora(ahora);
@@ -766,10 +746,11 @@ function limpiarFormulario() {
   document.getElementById('obsInput').value = '';
   document.getElementById('ocrStatus').innerHTML = '';
   document.getElementById('ocrStatus').style.color = '';
-  const radios = document.querySelectorAll('input[name="tipo"]');
-  radios.forEach(r => r.checked = false);
+  document.getElementById('btnIngreso').className = 'tipo-btn';
+  document.getElementById('btnEgreso').className = 'tipo-btn';
   state.photoBlob = null;
   state.photoDataUrl = null;
+  state.tipo = null;
 }
 
 function showScreen(id) {
