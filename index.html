@@ -18,13 +18,19 @@
     --surface: #141414;
     --surface2: #1e1e1e;
     --border: #2a2a2a;
-    --red: #1db954;
-    --red-dark: #158a3e;
     --green: #1db954;
     --green-dark: #158a3e;
     --text: #f0f0f0;
     --muted: #666;
     --accent: #1db954;
+
+    /* Screen 2 light theme */
+    --s2-bg: #f0faf4;
+    --s2-surface: #ffffff;
+    --s2-border: #b8e0c8;
+    --s2-text: #0f1f16;
+    --s2-muted: #4a7a5c;
+    --s2-header-bg: #1a1a1a;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -152,10 +158,10 @@
   .btn:active { transform: scale(0.98); }
 
   .btn-primary {
-    background: var(--red);
+    background: var(--green);
     color: white;
   }
-  .btn-primary:hover { background: var(--red-dark); }
+  .btn-primary:hover { background: var(--green-dark); }
   .btn-primary:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
 
   .btn-secondary {
@@ -168,7 +174,40 @@
     letter-spacing: 1px;
   }
 
-  /* ─── SCREEN 2 ─── */
+  /* ─── SCREEN 2 LIGHT THEME ─── */
+  #screen2 {
+    background: var(--s2-bg);
+    color: var(--s2-text);
+  }
+  #screen2 .field-label { color: var(--s2-muted); }
+  #screen2 input, #screen2 textarea, #screen2 select {
+    background: var(--s2-surface);
+    border-color: var(--s2-border);
+    color: var(--s2-text);
+  }
+  #screen2 input:focus, #screen2 textarea:focus, #screen2 select:focus {
+    border-color: var(--green);
+  }
+  #screen2 .info-bar {
+    background: var(--s2-header-bg);
+    border-color: #333;
+  }
+  #screen2 .info-bar .info-bar-label { color: #888; }
+  #screen2 .info-bar .info-bar-value { color: #f0f0f0; }
+  #screen2 .photo-zone {
+    background: var(--s2-surface);
+    border-color: var(--s2-border);
+  }
+  #screen2 .tipo-label {
+    background: var(--s2-surface);
+    border-color: var(--s2-border);
+    color: var(--s2-text);
+  }
+  #screen2 .btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+    border-color: #ccc;
+  }
   .photo-zone {
     background: var(--surface);
     border: 2px dashed var(--border);
@@ -608,10 +647,10 @@ async function procesarOCR(dataUrl) {
     if (patente) {
       document.getElementById('patenteInput').value = patente;
       statusEl.innerHTML = '✅ Patente detectada — verificá y corregí si es necesario';
-      statusEl.style.color = '#1db954';
+      statusEl.style.color = '#158a3e';
     } else {
-      statusEl.innerHTML = '⚠️ No se pudo leer — ingresá manualmente';
-      statusEl.style.color = '#f59e0b';
+      statusEl.innerHTML = '⚠️ No se detectó patente — escribila a mano en el campo de arriba';
+      statusEl.style.color = '#d97706';
     }
   } catch (err) {
     statusEl.innerHTML = '⚠️ Error OCR — ingresá manualmente';
@@ -696,8 +735,8 @@ async function enviarRegistro() {
       showToast('✅ Registro guardado', 'success');
       setTimeout(() => {
         limpiarFormulario();
-        cerrarSesion();
-      }, 1500);
+        resetTimer();
+      }, 1200);
     } else {
       throw new Error(result.error || 'Error desconocido');
     }
