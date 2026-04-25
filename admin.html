@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spartan — Panel de Administración</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f7f8f5;
+    --surface: #ffffff;
+    --border: #e2e8e0;
+    --green: #1a7a3c;
+    --green-light: #e8f5ee;
+    --green-mid: #2ecc71;
+    --text: #111a14;
+    --muted: #6b7c70;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  .header {
+    background: #0f1f16;
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--green);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 4px;
+    color: var(--green-mid);
+  }
+  .header-tag {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #4a7a5c;
+    border-left: 1px solid #2a4a32;
+    padding-left: 16px;
+  }
+  .base-url-display {
+    font-size: 12px;
+    color: #4a7a5c;
+    font-family: monospace;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* ADD OBJETIVO FORM */
+  .add-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .form-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+  .form-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  input[type="text"] {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: var(--green); }
+
+  .btn {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: #155c2d; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+  .btn-danger {
+    background: transparent;
+    border: none;
+    color: #ccc;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+  .btn-danger:hover { color: var(--danger); }
+
+  /* OBJETIVOS LIST */
+  .objetivo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .objetivo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--green-light);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .objetivo-header:hover { background: #d8f0e4; }
+  .objetivo-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    color: var(--green);
+  }
+  .objetivo-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .puesto-count {
+    font-size: 12px;
+    color: var(--muted);
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+  .chevron {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .chevron.open { transform: rotate(180deg); }
+
+  .objetivo-body {
+    padding: 16px 20px;
+    display: none;
+  }
+  .objetivo-body.open { display: block; }
+
+  /* PUESTOS */
+  .puestos-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .puesto-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    gap: 12px;
+  }
+  .puesto-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .puesto-name { font-weight: 600; font-size: 14px; }
+  .puesto-url {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .puesto-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .add-puesto-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .add-puesto-form input { flex: 1; }
+
+  /* COPY TOAST */
+  .copy-btn {
+    background: #0f1f16;
+    color: var(--green-mid);
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { background: #1a3a24; }
+  .copy-btn.copied { background: var(--green); color: white; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 15px; }
+
+  /* BASE URL CONFIG */
+  .config-bar {
+    background: #0f1f16;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .config-bar label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #4a7a5c; white-space: nowrap; }
+  .config-bar input {
+    flex: 1;
+    min-width: 200px;
+    background: #1a3a24;
+    border: 1px solid #2a5a34;
+    color: #a0d4b0;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  .config-bar input:focus { border-color: var(--green-mid); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">SPARTAN</div>
+    <div class="header-tag">Panel de Administración</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- BASE URL CONFIG -->
+  <div class="section-title">URL base de la app</div>
+  <div class="config-bar">
+    <label>URL Base</label>
+    <input type="text" id="baseUrlInput" placeholder="https://tu-usuario.github.io/spartan-accesos/" oninput="guardarConfig()">
+    <span style="font-size:12px; color:#4a7a5c;">Modificá con tu URL real de GitHub Pages</span>
+  </div>
+
+  <!-- ADD OBJETIVO -->
+  <div class="section-title">Agregar objetivo</div>
+  <div class="add-form">
+    <div class="form-field">
+      <div class="form-label">Nombre del objetivo</div>
+      <input type="text" id="nuevoObjetivo" placeholder="Ej: Banco Provincia" onkeydown="if(event.key==='Enter') agregarObjetivo()">
+    </div>
+    <button class="btn btn-green" onclick="agregarObjetivo()">+ AGREGAR</button>
+  </div>
+
+  <!-- OBJETIVOS -->
+  <div class="section-title">Objetivos y puestos</div>
+  <div id="objetivosList"></div>
+
+</div>
+
+<script>
+// ─── STORAGE ──────────────────────────────────────────────────
+function cargarDatos() {
+  try {
+    return JSON.parse(localStorage.getItem('spartan_admin') || '{"baseUrl":"","objetivos":[]}');
+  } catch { return { baseUrl: '', objetivos: [] }; }
+}
+
+function guardarDatos(data) {
+  localStorage.setItem('spartan_admin', JSON.stringify(data));
+}
+
+function guardarConfig() {
+  const data = cargarDatos();
+  data.baseUrl = document.getElementById('baseUrlInput').value.trim();
+  guardarDatos(data);
+  renderAll();
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const data = cargarDatos();
+  document.getElementById('baseUrlInput').value = data.baseUrl || '';
+  renderAll();
+});
+
+// ─── HELPERS ──────────────────────────────────────────────────
+function slugify(str) {
+  return str.trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
+function buildUrl(baseUrl, objetivo, puesto) {
+  const base = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+  return `${base}?objetivo=${encodeURIComponent(slugify(objetivo))}&puesto=${encodeURIComponent(slugify(puesto))}`;
+}
+
+// ─── AGREGAR OBJETIVO ─────────────────────────────────────────
+function agregarObjetivo() {
+  const nombre = document.getElementById('nuevoObjetivo').value.trim();
+  if (!nombre) return;
+  const data = cargarDatos();
+  if (data.objetivos.find(o => slugify(o.nombre) === slugify(nombre))) {
+    alert('Ya existe un objetivo con ese nombre.');
+    return;
+  }
+  data.objetivos.push({ nombre, puestos: [] });
+  guardarDatos(data);
+  document.getElementById('nuevoObjetivo').value = '';
+  renderAll();
+}
+
+function eliminarObjetivo(idx) {
+  if (!confirm('¿Eliminar este objetivo y todos sus puestos?')) return;
+  const data = cargarDatos();
+  data.objetivos.splice(idx, 1);
+  guardarDatos(data);
+  renderAll();
+}
+
+// ─── AGREGAR PUESTO ───────────────────────────────────────────
+function agregarPuesto(objIdx) {
+  const input = document.getElementById(`nuevoPuesto_${objIdx}`);
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  const data = cargarDatos();
+  data.objetivos[objIdx].puestos.push({ nombre });
+  guardarDatos(data);
+  renderAll();
+  // Reabrir el card
+  setTimeout(() => {
+    const body = document.getElementById(`body_${objIdx}`);
+    if (body) { body.classList.add('open'); document.getElementById(`chevron_${objIdx}`).classList.add('open'); }
+  }, 10);
+}
+
+function eliminarPuesto(objIdx, puestoIdx) {
+  const data = cargarDatos();
+  data.objetivos[objIdx].puestos.splice(puestoIdx, 1);
+  guardarDatos(data);
+  renderAll();
+  setTimeout(() => {
+    const body = document.getElementById(`body_${objIdx}`);
+    if (body) { body.classList.add('open'); document.getElementById(`chevron_${objIdx}`).classList.add('open'); }
+  }, 10);
+}
+
+// ─── COPIAR URL ───────────────────────────────────────────────
+function copiarUrl(url, btnId) {
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copiar URL'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ─── TOGGLE ───────────────────────────────────────────────────
+function toggleObjetivo(idx) {
+  const body = document.getElementById(`body_${idx}`);
+  const chevron = document.getElementById(`chevron_${idx}`);
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+
+// ─── RENDER ───────────────────────────────────────────────────
+function renderAll() {
+  const data = cargarDatos();
+  const baseUrl = data.baseUrl || 'https://TU-USUARIO.github.io/spartan-accesos/';
+  const container = document.getElementById('objetivosList');
+
+  if (data.objetivos.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🏢</div>
+        <div class="empty-text">No hay objetivos todavía.<br>Agregá el primero arriba.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = data.objetivos.map((obj, objIdx) => `
+    <div class="objetivo-card">
+      <div class="objetivo-header" onclick="toggleObjetivo(${objIdx})">
+        <div class="objetivo-name">${obj.nombre}</div>
+        <div class="objetivo-meta">
+          <span class="puesto-count">${obj.puestos.length} puesto${obj.puestos.length !== 1 ? 's' : ''}</span>
+          <button class="btn-danger" onclick="event.stopPropagation(); eliminarObjetivo(${objIdx})">🗑</button>
+          <span class="chevron" id="chevron_${objIdx}">▼</span>
+        </div>
+      </div>
+      <div class="objetivo-body" id="body_${objIdx}">
+        <div class="puestos-list">
+          ${obj.puestos.length === 0
+            ? `<div style="color:var(--muted); font-size:13px; padding:8px 0;">Sin puestos aún — agregá uno abajo.</div>`
+            : obj.puestos.map((p, pIdx) => {
+                const url = buildUrl(baseUrl, obj.nombre, p.nombre);
+                const btnId = `copybtn_${objIdx}_${pIdx}`;
+                return `
+                  <div class="puesto-row">
+                    <div class="puesto-info">
+                      <div class="puesto-name">${p.nombre}</div>
+                      <div class="puesto-url">${url}</div>
+                    </div>
+                    <div class="puesto-actions">
+                      <button class="copy-btn" id="${btnId}" onclick="copiarUrl('${url}', '${btnId}')">Copiar URL</button>
+                      <button class="btn-danger" onclick="eliminarPuesto(${objIdx}, ${pIdx})">🗑</button>
+                    </div>
+                  </div>`;
+              }).join('')
+          }
+        </div>
+        <div class="add-puesto-form">
+          <input type="text" id="nuevoPuesto_${objIdx}" placeholder="Nombre del puesto" onkeydown="if(event.key==='Enter') agregarPuesto(${objIdx})">
+          <button class="btn btn-outline" onclick="agregarPuesto(${objIdx})">+ Puesto</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+</script>
+</body>
+</html>
