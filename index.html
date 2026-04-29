@@ -9,7 +9,6 @@
 <meta name="theme-color" content="#0a0a0a">
 <title>Spartan Accesos</title>
 <link rel="manifest" href="manifest.json">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
 
@@ -448,7 +447,6 @@
       <div class="photo-hint">Tocá para sacar foto</div>
     </div>
     <div class="ocr-status" id="ocrStatus"></div>
-  </div>
 
   <!-- CAMARA MODAL -->
   <div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column; height:100dvh;">
@@ -628,7 +626,6 @@ function tomarFoto() {
     state.photoDataUrl = dataUrl;
     cerrarStreamCamara();
     mostrarFotoPreview(dataUrl);
-    procesarOCR(dataUrl);
   }, 'image/jpeg', 0.9);
 }
 
@@ -655,56 +652,6 @@ function mostrarFotoPreview(dataUrl) {
   `;
   zone.classList.add('has-photo');
   zone.onclick = null;
-}
-
-async function procesarOCR(dataUrl) {
-  const statusEl = document.getElementById('ocrStatus');
-  statusEl.innerHTML = '<div class="ocr-spinner"></div> Leyendo patente...';
-
-  try {
-    const worker = await Tesseract.createWorker('eng', 1, {
-      logger: () => {}
-    });
-
-    await worker.setParameters({
-      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-    });
-
-    const { data: { text } } = await worker.recognize(dataUrl);
-    await worker.terminate();
-
-    // Limpiar y extraer patente
-    const cleaned = text.replace(/[^A-Z0-9]/g, '').trim();
-    const patente = extraerPatente(cleaned);
-
-    if (patente) {
-      document.getElementById('patenteInput').value = patente;
-      statusEl.innerHTML = '✅ Patente detectada — verificá y corregí si es necesario';
-      statusEl.style.color = '#158a3e';
-    } else {
-      statusEl.innerHTML = '⚠️ No se detectó patente — escribila a mano en el campo de arriba';
-      statusEl.style.color = '#d97706';
-    }
-  } catch (err) {
-    statusEl.innerHTML = '⚠️ Error OCR — ingresá manualmente';
-    statusEl.style.color = '#f59e0b';
-  }
-}
-
-function extraerPatente(texto) {
-  // Formato nuevo: 3 letras + 3 números (AB123CD) o viejo: 3 letras + 3 números
-  // Argentina nueva: AAA000 o AA000AA
-  const patterns = [
-    /[A-Z]{2}\d{3}[A-Z]{2}/,  // nuevo: AB123CD
-    /[A-Z]{3}\d{3}/,            // viejo: ABC123
-  ];
-  for (const p of patterns) {
-    const m = texto.match(p);
-    if (m) return m[0];
-  }
-  // Si no matchea ningún patrón pero tiene 6-7 chars, devolver igual
-  if (texto.length >= 6 && texto.length <= 7) return texto;
-  return null;
 }
 
 // ─── ENVÍO ───────────────────────────────────────────────────────
