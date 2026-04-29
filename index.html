@@ -633,7 +633,7 @@ let streamActivo = null;
 async function abrirCamara() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
     streamActivo = stream;
@@ -651,17 +651,21 @@ async function abrirCamara() {
 function tomarFoto() {
   const video = document.getElementById('videoStream');
   const canvas = document.getElementById('fotoCanvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
+
+  // Reducir resolución para fotos más livianas
+  const MAX = 800;
+  const ratio = Math.min(MAX / video.videoWidth, MAX / video.videoHeight, 1);
+  canvas.width = Math.round(video.videoWidth * ratio);
+  canvas.height = Math.round(video.videoHeight * ratio);
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
 
   canvas.toBlob((blob) => {
     state.photoBlob = blob;
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
     state.photoDataUrl = dataUrl;
     cerrarStreamCamara();
     mostrarFotoPreview(dataUrl);
-  }, 'image/jpeg', 0.9);
+  }, 'image/jpeg', 0.7);
 }
 
 function cancelarCamara() {
@@ -717,7 +721,7 @@ async function enviarRegistro() {
   const fecha = formatFecha(ahora);
   const hora = formatHora(ahora);
 
-  showLoading('Enviando registro...');
+  showLoading('Preparando registro...');
 
   try {
     // Obtener ubicación
@@ -755,28 +759,38 @@ async function enviarRegistro() {
       nombreFoto,
     };
 
-    const resp = await fetch(CONFIG.APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+    // Mostrar éxito inmediato y limpiar formulario
+    hideLoading();
+    showToast('✅ Registro guardado', 'success');
+    limpiarFormulario();
+    resetTimer();
 
-    const result = await resp.json();
-
-    if (result.success) {
-      hideLoading();
-      showToast('✅ Registro guardado', 'success');
-      setTimeout(() => {
-        limpiarFormulario();
-        resetTimer();
-      }, 1200);
-    } else {
-      throw new Error(result.error || 'Error desconocido');
-    }
+    // Subir a Google en segundo plano
+    enviarEnBackground(payload);
 
   } catch(err) {
     hideLoading();
-    showToast('Error al enviar: ' + err.message, 'error');
+    showToast('Error al preparar el registro: ' + err.message, 'error');
   }
+}
+
+async function enviarEnBackground(payload) {
+  const MAX_INTENTOS = 3;
+  for (let i = 0; i < MAX_INTENTOS; i++) {
+    try {
+      const resp = await fetch(CONFIG.APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      const result = await resp.json();
+      if (result.success) return; // éxito
+    } catch(e) {
+      // Esperar antes de reintentar
+      if (i < MAX_INTENTOS - 1) await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  // Si falló después de 3 intentos, avisar discretamente
+  showToast('⚠️ No se pudo sincronizar — verificá la conexión', 'error');
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────
