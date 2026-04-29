@@ -439,34 +439,22 @@
     </div>
   </div>
 
-  <!-- Foto -->
+  <!-- Tipo de sujeto -->
   <div class="field-group">
-    <div class="field-label">Foto de la patente</div>
-    <div class="photo-zone" id="photoZone" onclick="abrirCamara()">
-      <div class="photo-icon">📷</div>
-      <div class="photo-hint">Tocá para sacar foto</div>
-    </div>
-    <div class="ocr-status" id="ocrStatus"></div>
-
-  <!-- CAMARA MODAL -->
-  <div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column; height:100dvh;">
-    <video id="videoStream" autoplay playsinline style="width:100%; flex:1; object-fit:cover; min-height:0;"></video>
-    <canvas id="fotoCanvas" style="display:none;"></canvas>
-    <div style="padding:16px; display:flex; gap:12px; background:#0a0a0a; flex-shrink:0;">
-      <button onclick="cancelarCamara()" style="flex:1; padding:16px; background:#1e1e1e; color:#ccc; border:1px solid #333; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:15px; cursor:pointer;">Cancelar</button>
-      <button onclick="tomarFoto()" style="flex:2; padding:16px; background:#1db954; color:white; border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; cursor:pointer;">📷 SACAR FOTO</button>
+    <div class="field-label">¿Qué registrás?</div>
+    <div class="tipo-selector">
+      <button type="button" class="tipo-btn" id="btnVehiculo" onclick="seleccionarSujeto('VEHICULO')">
+        🚗 VEHÍCULO
+      </button>
+      <button type="button" class="tipo-btn" id="btnPersona" onclick="seleccionarSujeto('PERSONA')">
+        🚶 PERSONA
+      </button>
     </div>
   </div>
 
-  <!-- Patente -->
+  <!-- Ingreso / Egreso -->
   <div class="field-group">
-    <div class="field-label">Patente (verificar y corregir)</div>
-    <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB 123 CD" maxlength="10">
-  </div>
-
-  <!-- Tipo -->
-  <div class="field-group">
-    <div class="field-label">Tipo de movimiento</div>
+    <div class="field-label">Movimiento</div>
     <div class="tipo-selector">
       <button type="button" class="tipo-btn" id="btnIngreso" onclick="seleccionarTipo('INGRESO')">
         🟢 INGRESO
@@ -477,13 +465,34 @@
     </div>
   </div>
 
-  <!-- Conductor -->
-  <div class="field-group">
-    <div class="field-label">Nombre del conductor</div>
-    <input type="text" id="conductorInput" placeholder="Apellido y nombre">
+  <!-- Campos VEHÍCULO -->
+  <div id="camposVehiculo" style="display:none; flex-direction:column; gap:20px;">
+    <div class="field-group">
+      <div class="field-label">Foto de la patente</div>
+      <div class="photo-zone" id="photoZone" onclick="abrirCamara()">
+        <div class="photo-icon">📷</div>
+        <div class="photo-hint">Tocá para sacar foto</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Patente</div>
+      <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB123CD" maxlength="10" style="text-transform:uppercase;">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Conductor</div>
+      <input type="text" id="conductorInput" placeholder="Apellido y nombre">
+    </div>
   </div>
 
-  <!-- Observaciones -->
+  <!-- Campos PERSONA -->
+  <div id="camposPersona" style="display:none; flex-direction:column; gap:20px;">
+    <div class="field-group">
+      <div class="field-label">Nombre de la persona</div>
+      <input type="text" id="personaInput" placeholder="Apellido y nombre">
+    </div>
+  </div>
+
+  <!-- Observaciones — siempre visible -->
   <div class="field-group">
     <div class="field-label">Observaciones</div>
     <textarea id="obsInput" placeholder="Opcional"></textarea>
@@ -492,6 +501,16 @@
   <button class="btn btn-primary" id="enviarBtn" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
   <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
 
+</div>
+
+<!-- CAMARA MODAL -->
+<div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column; height:100dvh;">
+  <video id="videoStream" autoplay playsinline style="width:100%; flex:1; object-fit:cover; min-height:0;"></video>
+  <canvas id="fotoCanvas" style="display:none;"></canvas>
+  <div style="padding:16px; display:flex; gap:12px; background:#0a0a0a; flex-shrink:0;">
+    <button onclick="cancelarCamara()" style="flex:1; padding:16px; background:#1e1e1e; color:#ccc; border:1px solid #333; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:15px; cursor:pointer;">Cancelar</button>
+    <button onclick="tomarFoto()" style="flex:2; padding:16px; background:#1db954; color:white; border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; cursor:pointer;">📷 SACAR FOTO</button>
+  </div>
 </div>
 
 <!-- LOADING -->
@@ -516,6 +535,7 @@ let state = {
   objetivo: null,
   puesto: null,
   tipo: null,
+  sujeto: null,
   sessionTimer: null,
   sessionSeconds: CONFIG.SESSION_MINUTES * 60,
   photoBlob: null,
@@ -585,6 +605,21 @@ function cerrarSesion() {
 // Reset timer on any interaction
 document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
 document.addEventListener('click', () => { if (state.cuil) resetTimer(); });
+
+function seleccionarSujeto(sujeto) {
+  state.sujeto = sujeto;
+  document.getElementById('btnVehiculo').className = 'tipo-btn' + (sujeto === 'VEHICULO' ? ' selected-ingreso' : '');
+  document.getElementById('btnPersona').className = 'tipo-btn' + (sujeto === 'PERSONA' ? ' selected-ingreso' : '');
+  const v = document.getElementById('camposVehiculo');
+  const p = document.getElementById('camposPersona');
+  if (sujeto === 'VEHICULO') {
+    v.style.display = 'flex';
+    p.style.display = 'none';
+  } else {
+    v.style.display = 'none';
+    p.style.display = 'flex';
+  }
+}
 
 function seleccionarTipo(tipo) {
   state.tipo = tipo;
@@ -656,14 +691,26 @@ function mostrarFotoPreview(dataUrl) {
 
 // ─── ENVÍO ───────────────────────────────────────────────────────
 async function enviarRegistro() {
-  const patente = document.getElementById('patenteInput').value.trim().toUpperCase();
-  const conductor = document.getElementById('conductorInput').value.trim();
   const obs = document.getElementById('obsInput').value.trim();
 
-  if (!state.photoBlob) { showToast('Sacá una foto de la patente', 'error'); return; }
-  if (!patente) { showToast('Ingresá la patente', 'error'); return; }
+  if (!state.sujeto) { showToast('Seleccioná Vehículo o Persona', 'error'); return; }
   if (!state.tipo) { showToast('Seleccioná INGRESO o EGRESO', 'error'); return; }
-  if (!conductor) { showToast('Ingresá el nombre del conductor', 'error'); return; }
+
+  let patente = '';
+  let conductor = '';
+
+  if (state.sujeto === 'VEHICULO') {
+    patente = document.getElementById('patenteInput').value.trim().toUpperCase();
+    conductor = document.getElementById('conductorInput').value.trim();
+    if (!state.photoBlob) { showToast('Sacá una foto de la patente', 'error'); return; }
+    if (!patente) { showToast('Ingresá la patente', 'error'); return; }
+    if (!conductor) { showToast('Ingresá el nombre del conductor', 'error'); return; }
+  } else {
+    const persona = document.getElementById('personaInput').value.trim();
+    if (!persona) { showToast('Ingresá el nombre de la persona', 'error'); return; }
+    patente = 'CAMINANDO';
+    conductor = persona;
+  }
 
   const tipo = state.tipo;
   const ahora = new Date();
@@ -681,10 +728,15 @@ async function enviarRegistro() {
       longitud = pos.coords.longitude.toFixed(6);
     } catch(e) { /* ubicación opcional */ }
 
-    // Convertir foto a base64
-    const fotoBase64 = await blobToBase64(state.photoBlob);
-    const fotoExt = state.photoBlob.type.split('/')[1] || 'jpg';
-    const nombreFoto = `${fecha}_${hora.replace(':','')}_${patente}.${fotoExt}`;
+    // Foto solo para vehículos
+    let fotoBase64 = '';
+    let fotoExt = '';
+    let nombreFoto = '';
+    if (state.sujeto === 'VEHICULO' && state.photoBlob) {
+      fotoBase64 = await blobToBase64(state.photoBlob);
+      fotoExt = state.photoBlob.type.split('/')[1] || 'jpg';
+      nombreFoto = `${fecha.replace(/\//g,'-')}_${hora.replace(':','')}_${patente}.${fotoExt}`;
+    }
 
     const payload = {
       cuil: state.cuil,
@@ -737,14 +789,18 @@ function limpiarFormulario() {
   document.getElementById('photoZone').onclick = () => abrirCamara();
   document.getElementById('patenteInput').value = '';
   document.getElementById('conductorInput').value = '';
+  document.getElementById('personaInput').value = '';
   document.getElementById('obsInput').value = '';
-  document.getElementById('ocrStatus').innerHTML = '';
-  document.getElementById('ocrStatus').style.color = '';
   document.getElementById('btnIngreso').className = 'tipo-btn';
   document.getElementById('btnEgreso').className = 'tipo-btn';
+  document.getElementById('btnVehiculo').className = 'tipo-btn';
+  document.getElementById('btnPersona').className = 'tipo-btn';
+  document.getElementById('camposVehiculo').style.display = 'none';
+  document.getElementById('camposPersona').style.display = 'none';
   state.photoBlob = null;
   state.photoDataUrl = null;
   state.tipo = null;
+  state.sujeto = null;
 }
 
 function showScreen(id) {

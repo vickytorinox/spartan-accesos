@@ -274,20 +274,39 @@
 </head>
 <body>
 
+<!-- PANTALLA DE LOGIN -->
+<div id="loginScreen" style="position:fixed; inset:0; background:#0f1f16; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999; gap:24px;">
+  <div style="font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:6px; color:#2ecc71;">SPARTAN</div>
+  <div style="font-size:12px; letter-spacing:3px; color:#4a7a5c; text-transform:uppercase;">Panel de Administración</div>
+  <div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:320px;">
+    <input type="password" id="passwordInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter') verificarPassword()"
+      style="padding:14px 16px; background:#1a3a24; border:1px solid #2a5a34; border-radius:8px; color:#a0d4b0; font-family:'DM Sans',sans-serif; font-size:16px; outline:none; text-align:center; letter-spacing:4px;">
+    <div id="loginError" style="color:#e63030; font-size:13px; text-align:center; display:none;">Contraseña incorrecta</div>
+    <button onclick="verificarPassword()"
+      style="padding:14px; background:#1db954; color:white; border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:3px; cursor:pointer;">
+      INGRESAR
+    </button>
+  </div>
+</div>
+
+<div id="adminContent" style="display:none;">
 <div class="header">
   <div class="header-left">
     <div class="logo">SPARTAN</div>
     <div class="header-tag">Panel de Administración</div>
   </div>
+  <button onclick="cerrarAdmin()" style="background:transparent; border:1px solid #2a5a34; color:#4a7a5c; padding:6px 14px; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer;">Cerrar sesión</button>
 </div>
 
+<div class="main">
+</div> <!-- /header -->
 <div class="main">
 
   <!-- BASE URL CONFIG -->
   <div class="section-title">URL base de la app</div>
   <div class="config-bar">
     <label>URL Base</label>
-    <input type="text" id="baseUrlInput" placeholder="https://vickytorinox.github.io/spartan-accesos/" oninput="guardarConfig()">
+    <input type="text" id="baseUrlInput" placeholder="https://tu-usuario.github.io/spartan-accesos/" oninput="guardarConfig()">
     <span style="font-size:12px; color:#4a7a5c;">Modificá con tu URL real de GitHub Pages</span>
   </div>
 
@@ -330,7 +349,6 @@ function guardarConfig() {
 window.addEventListener('DOMContentLoaded', () => {
   const data = cargarDatos();
   document.getElementById('baseUrlInput').value = data.baseUrl || '';
-  renderAll();
 });
 
 // ─── HELPERS ──────────────────────────────────────────────────
@@ -418,7 +436,7 @@ function toggleObjetivo(idx) {
 // ─── RENDER ───────────────────────────────────────────────────
 function renderAll() {
   const data = cargarDatos();
-  const baseUrl = data.baseUrl || 'https://vickytorinox.github.io/spartan-accesos/';
+  const baseUrl = data.baseUrl || 'https://TU-USUARIO.github.io/spartan-accesos/';
   const container = document.getElementById('objetivosList');
 
   if (data.objetivos.length === 0) {
@@ -469,6 +487,29 @@ function renderAll() {
     </div>
   `).join('');
 }
+
+// ─── LOGIN ────────────────────────────────────────────────────
+const PASSWORD = 'Spartan2024';
+
+function verificarPassword() {
+  const input = document.getElementById('passwordInput').value;
+  if (input === PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    renderAll();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+  }
+}
+
+function cerrarAdmin() {
+  document.getElementById('adminContent').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
 </script>
+</div> <!-- /adminContent -->
 </body>
 </html>
