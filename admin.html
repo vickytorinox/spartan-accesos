@@ -270,6 +270,47 @@
     font-size: 13px;
   }
   .config-bar input:focus { border-color: var(--green-mid); }
+
+  /* VERSION TOGGLE */
+  .version-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .version-toggle button {
+    padding: 8px 14px;
+    border: none;
+    background: var(--bg);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .version-toggle button + button { border-left: 1px solid var(--border); }
+  .version-toggle button.active-basica   { background: #e8f5ee; color: var(--green); }
+  .version-toggle button.active-extended { background: #fff8e1; color: #78350f; }
+
+  /* BADGES */
+  .badge-basica {
+    display: inline-block;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px;
+    background: #e8f5ee; color: var(--green); border: 1px solid #b8e0c8;
+    margin-left: 6px; vertical-align: middle;
+  }
+  .badge-extended {
+    display: inline-block;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px;
+    background: #fff8e1; color: #78350f; border: 1px solid #f59e0b;
+    margin-left: 6px; vertical-align: middle;
+  }
 </style>
 </head>
 <body>
@@ -360,9 +401,11 @@ function slugify(str) {
     .replace(/^_|_$/g, '');
 }
 
-function buildUrl(baseUrl, objetivo, puesto) {
+function buildUrl(baseUrl, objetivo, puesto, version) {
   const base = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-  return `${base}?objetivo=${encodeURIComponent(slugify(objetivo))}&puesto=${encodeURIComponent(slugify(puesto))}`;
+  let url = `${base}?objetivo=${encodeURIComponent(slugify(objetivo))}&puesto=${encodeURIComponent(slugify(puesto))}`;
+  if (version === 'extended') url += '&version=extended';
+  return url;
 }
 
 // ─── AGREGAR OBJETIVO ─────────────────────────────────────────
@@ -388,16 +431,30 @@ function eliminarObjetivo(idx) {
   renderAll();
 }
 
+// ─── VERSION TOGGLE ───────────────────────────────────────────
+// Guarda la selección temporaria de versión por objetivo
+const versionSeleccionada = {};
+
+function setVersionToggle(objIdx, ver) {
+  versionSeleccionada[objIdx] = ver;
+  const btnBasica    = document.getElementById(`vBtn_basica_${objIdx}`);
+  const btnExtended  = document.getElementById(`vBtn_extended_${objIdx}`);
+  if (!btnBasica || !btnExtended) return;
+  btnBasica.className   = ver === 'basica'    ? 'active-basica'   : '';
+  btnExtended.className = ver === 'extended'  ? 'active-extended' : '';
+}
+
 // ─── AGREGAR PUESTO ───────────────────────────────────────────
 function agregarPuesto(objIdx) {
   const input = document.getElementById(`nuevoPuesto_${objIdx}`);
   const nombre = input.value.trim();
   if (!nombre) return;
+  const version = versionSeleccionada[objIdx] || 'basica';
   const data = cargarDatos();
-  data.objetivos[objIdx].puestos.push({ nombre });
+  data.objetivos[objIdx].puestos.push({ nombre, version });
   guardarDatos(data);
+  input.value = '';
   renderAll();
-  // Reabrir el card
   setTimeout(() => {
     const body = document.getElementById(`body_${objIdx}`);
     if (body) { body.classList.add('open'); document.getElementById(`chevron_${objIdx}`).classList.add('open'); }
@@ -463,12 +520,16 @@ function renderAll() {
           ${obj.puestos.length === 0
             ? `<div style="color:var(--muted); font-size:13px; padding:8px 0;">Sin puestos aún — agregá uno abajo.</div>`
             : obj.puestos.map((p, pIdx) => {
-                const url = buildUrl(baseUrl, obj.nombre, p.nombre);
+                const ver = p.version || 'basica';
+                const url = buildUrl(baseUrl, obj.nombre, p.nombre, ver);
                 const btnId = `copybtn_${objIdx}_${pIdx}`;
+                const badge = ver === 'extended'
+                  ? `<span class="badge-extended">Extendido</span>`
+                  : `<span class="badge-basica">Básico</span>`;
                 return `
                   <div class="puesto-row">
                     <div class="puesto-info">
-                      <div class="puesto-name">${p.nombre}</div>
+                      <div class="puesto-name">${p.nombre}${badge}</div>
                       <div class="puesto-url">${url}</div>
                     </div>
                     <div class="puesto-actions">
@@ -481,6 +542,10 @@ function renderAll() {
         </div>
         <div class="add-puesto-form">
           <input type="text" id="nuevoPuesto_${objIdx}" placeholder="Nombre del puesto" onkeydown="if(event.key==='Enter') agregarPuesto(${objIdx})">
+          <div class="version-toggle" id="versionToggle_${objIdx}">
+            <button id="vBtn_basica_${objIdx}" class="active-basica" onclick="setVersionToggle(${objIdx},'basica')">Básico</button>
+            <button id="vBtn_extended_${objIdx}" onclick="setVersionToggle(${objIdx},'extended')">Extendido</button>
+          </div>
           <button class="btn btn-outline" onclick="agregarPuesto(${objIdx})">+ Puesto</button>
         </div>
       </div>

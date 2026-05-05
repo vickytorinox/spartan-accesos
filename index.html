@@ -317,6 +317,50 @@
     color: #7f1d1d;
   }
 
+  /* ─── ESTILOS CAMPOS EXTENDIDOS ─── */
+
+  /* Llave selector — igual a ingreso/egreso pero con amarillo */
+  .tipo-btn.selected-llave-deja {
+    background: #fff8e1;
+    border-color: #f59e0b;
+    color: #78350f;
+  }
+  .tipo-btn.selected-llave-retira {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e3a5f;
+  }
+
+  /* Acompañante selector */
+  .tipo-btn.selected-si {
+    background: #d4f5e2;
+    border-color: #1db954;
+    color: #0f5c2a;
+  }
+  .tipo-btn.selected-no {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #374151;
+  }
+
+  /* Badge versión extendida */
+  .version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff3cd;
+    border: 1px solid #f59e0b;
+    color: #78350f;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
   /* Toast */
   .toast {
     position: fixed;
@@ -390,6 +434,30 @@
     resize: none;
     height: 80px;
     line-height: 1.5;
+  }
+
+  /* Campos extendidos: animación de entrada */
+  .campos-extendidos {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeSlideIn 0.25s ease;
+  }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Campo nombres acompañante */
+  #campoNombresAcomp {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 0;
+    opacity: 0;
+  }
+  #campoNombresAcomp.visible {
+    max-height: 120px;
+    opacity: 1;
   }
 </style>
 </head>
@@ -492,6 +560,46 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════
+       CAMPOS EXTENDIDOS — solo visibles si version=extended
+       ═══════════════════════════════════════════════════ -->
+  <div id="camposExtendidos" class="campos-extendidos" style="display:none;">
+
+    <!-- LLAVE (solo visible cuando sujeto = VEHICULO) -->
+    <div id="campoLlave" style="display:none;" class="field-group">
+      <div class="field-label">🔑 Llave</div>
+      <div class="tipo-selector">
+        <button type="button" class="tipo-btn" id="btnDejaLlave" onclick="seleccionarLlave('DEJA')">
+          🔑 DEJA LLAVE
+        </button>
+        <button type="button" class="tipo-btn" id="btnRetiraLlave" onclick="seleccionarLlave('RETIRA')">
+          🔑 RETIRA LLAVE
+        </button>
+      </div>
+    </div>
+
+    <!-- ACOMPAÑANTE (solo visible cuando sujeto = VEHICULO) -->
+    <div id="campoAcomp" style="display:none;" class="field-group">
+      <div class="field-label">Acompañante</div>
+      <div class="tipo-selector">
+        <button type="button" class="tipo-btn" id="btnAcompSi" onclick="seleccionarAcompañante('SI')">
+          ✅ SÍ
+        </button>
+        <button type="button" class="tipo-btn" id="btnAcompNo" onclick="seleccionarAcompañante('NO')">
+          ❌ NO
+        </button>
+      </div>
+    </div>
+
+    <!-- Nombres (aparece solo si acompañante = SI) -->
+    <div id="campoNombresAcomp" class="field-group">
+      <div class="field-label">Nombres de los acompañantes</div>
+      <textarea id="nombresAcompInput" placeholder="Ej: García Juan, Pérez Ana"></textarea>
+    </div>
+
+  </div>
+  <!-- ═══ FIN CAMPOS EXTENDIDOS ═══ -->
+
   <!-- Observaciones — siempre visible -->
   <div class="field-group">
     <div class="field-label">Observaciones</div>
@@ -535,8 +643,11 @@ let state = {
   cuil: null,
   objetivo: null,
   puesto: null,
+  version: 'basica',       // 'basica' | 'extended'
   tipo: null,
   sujeto: null,
+  llave: null,             // null | 'DEJA' | 'RETIRA'
+  acompañante: null,       // null | 'SI' | 'NO'
   sessionTimer: null,
   sessionSeconds: CONFIG.SESSION_MINUTES * 60,
   photoBlob: null,
@@ -548,9 +659,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const obj = params.get('objetivo') || 'PRUEBA';
   const pst = params.get('puesto') || '1';
+  const ver = params.get('version') || 'basica';
+
   state.objetivo = obj.toUpperCase();
-  state.puesto = pst.toUpperCase();
-  const label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
+  state.puesto   = pst.toUpperCase();
+  state.version  = ver.toLowerCase();
+
+  let label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
+  if (state.version === 'extended') {
+    label += ' · EXTENDIDO';
+  }
   document.getElementById('puestoInfoLabel').textContent = label;
 });
 
@@ -565,6 +683,11 @@ function iniciarSesion() {
   showScreen('screen2');
   document.getElementById('sessionTimer').style.display = 'block';
   iniciarTimer();
+
+  // Mostrar campos extendidos si corresponde
+  if (state.version === 'extended') {
+    document.getElementById('camposExtendidos').style.display = 'flex';
+  }
 }
 
 function iniciarTimer() {
@@ -607,25 +730,68 @@ function cerrarSesion() {
 document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
 document.addEventListener('click', () => { if (state.cuil) resetTimer(); });
 
+// ─── SELECTORES BÁSICOS ──────────────────────────────────────────
 function seleccionarSujeto(sujeto) {
   state.sujeto = sujeto;
   document.getElementById('btnVehiculo').className = 'tipo-btn' + (sujeto === 'VEHICULO' ? ' selected-ingreso' : '');
-  document.getElementById('btnPersona').className = 'tipo-btn' + (sujeto === 'PERSONA' ? ' selected-ingreso' : '');
+  document.getElementById('btnPersona').className  = 'tipo-btn' + (sujeto === 'PERSONA'  ? ' selected-ingreso' : '');
+
   const v = document.getElementById('camposVehiculo');
   const p = document.getElementById('camposPersona');
+  const cl = document.getElementById('campoLlave');
+  const ca = document.getElementById('campoAcomp');
+
   if (sujeto === 'VEHICULO') {
     v.style.display = 'flex';
     p.style.display = 'none';
+    // Mostrar llave y acompañante solo en versión extendida
+    if (state.version === 'extended') {
+      if (cl) cl.style.display = 'flex';
+      if (ca) ca.style.display = 'flex';
+    }
   } else {
     v.style.display = 'none';
     p.style.display = 'flex';
+    // Ocultar y resetear llave
+    if (cl) cl.style.display = 'none';
+    state.llave = null;
+    document.getElementById('btnDejaLlave').className   = 'tipo-btn';
+    document.getElementById('btnRetiraLlave').className = 'tipo-btn';
+    // Ocultar y resetear acompañante
+    if (ca) ca.style.display = 'none';
+    state.acompañante = null;
+    document.getElementById('btnAcompSi').className = 'tipo-btn';
+    document.getElementById('btnAcompNo').className = 'tipo-btn';
+    document.getElementById('campoNombresAcomp').classList.remove('visible');
+    document.getElementById('nombresAcompInput').value = '';
   }
 }
 
 function seleccionarTipo(tipo) {
   state.tipo = tipo;
   document.getElementById('btnIngreso').className = 'tipo-btn' + (tipo === 'INGRESO' ? ' selected-ingreso' : '');
-  document.getElementById('btnEgreso').className = 'tipo-btn' + (tipo === 'EGRESO' ? ' selected-egreso' : '');
+  document.getElementById('btnEgreso').className  = 'tipo-btn' + (tipo === 'EGRESO'  ? ' selected-egreso'  : '');
+}
+
+// ─── SELECTORES EXTENDIDOS ───────────────────────────────────────
+function seleccionarLlave(opcion) {
+  state.llave = opcion;
+  document.getElementById('btnDejaLlave').className   = 'tipo-btn' + (opcion === 'DEJA'   ? ' selected-llave-deja'   : '');
+  document.getElementById('btnRetiraLlave').className = 'tipo-btn' + (opcion === 'RETIRA' ? ' selected-llave-retira' : '');
+}
+
+function seleccionarAcompañante(opcion) {
+  state.acompañante = opcion;
+  document.getElementById('btnAcompSi').className = 'tipo-btn' + (opcion === 'SI' ? ' selected-si'  : '');
+  document.getElementById('btnAcompNo').className = 'tipo-btn' + (opcion === 'NO' ? ' selected-no'  : '');
+
+  const campoNombres = document.getElementById('campoNombresAcomp');
+  if (opcion === 'SI') {
+    campoNombres.classList.add('visible');
+  } else {
+    campoNombres.classList.remove('visible');
+    document.getElementById('nombresAcompInput').value = '';
+  }
 }
 
 // ─── CÁMARA API ──────────────────────────────────────────────────
@@ -653,10 +819,9 @@ function tomarFoto() {
   const video = document.getElementById('videoStream');
   const canvas = document.getElementById('fotoCanvas');
 
-  // Reducir resolución para fotos más livianas
   const MAX = 800;
   const ratio = Math.min(MAX / video.videoWidth, MAX / video.videoHeight, 1);
-  canvas.width = Math.round(video.videoWidth * ratio);
+  canvas.width  = Math.round(video.videoWidth  * ratio);
   canvas.height = Math.round(video.videoHeight * ratio);
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -669,9 +834,7 @@ function tomarFoto() {
   }, 'image/jpeg', 0.7);
 }
 
-function cancelarCamara() {
-  cerrarStreamCamara();
-}
+function cancelarCamara() { cerrarStreamCamara(); }
 
 function cerrarStreamCamara() {
   if (streamActivo) {
@@ -699,49 +862,66 @@ async function enviarRegistro() {
   const obs = document.getElementById('obsInput').value.trim();
 
   if (!state.sujeto) { showToast('Seleccioná Vehículo o Persona', 'error'); return; }
-  if (!state.tipo) { showToast('Seleccioná INGRESO o EGRESO', 'error'); return; }
+  if (!state.tipo)   { showToast('Seleccioná INGRESO o EGRESO',    'error'); return; }
 
-  let patente = '';
+  // Validaciones extendidas
+  if (state.version === 'extended') {
+    if (state.sujeto === 'VEHICULO' && !state.llave) {
+      showToast('Indicá si deja o retira llave', 'error'); return;
+    }
+    if (!state.acompañante) {
+      showToast('Indicá si hay acompañante', 'error'); return;
+    }
+    if (state.acompañante === 'SI') {
+      const nombres = document.getElementById('nombresAcompInput').value.trim();
+      if (!nombres) { showToast('Ingresá los nombres de los acompañantes', 'error'); return; }
+    }
+  }
+
+  let patente  = '';
   let conductor = '';
 
   if (state.sujeto === 'VEHICULO') {
-    patente = document.getElementById('patenteInput').value.trim().toUpperCase();
+    patente   = document.getElementById('patenteInput').value.trim().toUpperCase();
     conductor = document.getElementById('conductorInput').value.trim();
     if (!state.photoBlob) { showToast('Sacá una foto de la patente', 'error'); return; }
-    if (!patente) { showToast('Ingresá la patente', 'error'); return; }
-    if (!conductor) { showToast('Ingresá el nombre del conductor', 'error'); return; }
+    if (!patente)         { showToast('Ingresá la patente',           'error'); return; }
+    if (!conductor)       { showToast('Ingresá el nombre del conductor', 'error'); return; }
   } else {
     const persona = document.getElementById('personaInput').value.trim();
     if (!persona) { showToast('Ingresá el nombre de la persona', 'error'); return; }
-    patente = 'CAMINANDO';
+    patente   = 'CAMINANDO';
     conductor = persona;
   }
 
-  const tipo = state.tipo;
+  const tipo  = state.tipo;
   const ahora = new Date();
   const fecha = formatFecha(ahora);
-  const hora = formatHora(ahora);
+  const hora  = formatHora(ahora);
 
   showLoading('Preparando registro...');
 
   try {
-    // Obtener ubicación
     let latitud = '', longitud = '';
     try {
       const pos = await getLocation();
-      latitud = pos.coords.latitude.toFixed(6);
+      latitud  = pos.coords.latitude.toFixed(6);
       longitud = pos.coords.longitude.toFixed(6);
     } catch(e) { /* ubicación opcional */ }
 
-    // Foto solo para vehículos
-    let fotoBase64 = '';
-    let fotoExt = '';
-    let nombreFoto = '';
+    let fotoBase64 = '', fotoExt = '', nombreFoto = '';
     if (state.sujeto === 'VEHICULO' && state.photoBlob) {
-      fotoBase64 = await blobToBase64(state.photoBlob);
-      fotoExt = state.photoBlob.type.split('/')[1] || 'jpg';
-      nombreFoto = `${fecha.replace(/\//g,'-')}_${hora.replace(':','')}_${patente}.${fotoExt}`;
+      fotoBase64  = await blobToBase64(state.photoBlob);
+      fotoExt     = state.photoBlob.type.split('/')[1] || 'jpg';
+      nombreFoto  = `${fecha.replace(/\//g,'-')}_${hora.replace(':','')}_${patente}.${fotoExt}`;
     }
+
+    // Campos extendidos — vacíos en versión básica
+    const llave             = state.version === 'extended' ? (state.llave || '') : '';
+    const acompañante       = state.version === 'extended' ? (state.acompañante || '') : '';
+    const nombresAcompañantes = (state.version === 'extended' && state.acompañante === 'SI')
+                                ? document.getElementById('nombresAcompInput').value.trim()
+                                : '';
 
     const payload = {
       token: CONFIG.SECRET_TOKEN,
@@ -749,7 +929,8 @@ async function enviarRegistro() {
       fecha,
       hora,
       objetivo: state.objetivo || '',
-      puesto: state.puesto || '',
+      puesto:   state.puesto   || '',
+      version:  state.version,
       tipo,
       patente,
       conductor,
@@ -759,15 +940,17 @@ async function enviarRegistro() {
       fotoBase64,
       fotoExt,
       nombreFoto,
+      // Campos extendidos
+      llave,
+      acompañante,
+      nombresAcompañantes,
     };
 
-    // Mostrar éxito inmediato y limpiar formulario
     hideLoading();
     showToast('✅ Registro guardado', 'success');
     limpiarFormulario();
     resetTimer();
 
-    // Subir a Google en segundo plano
     enviarEnBackground(payload);
 
   } catch(err) {
@@ -780,43 +963,57 @@ async function enviarEnBackground(payload) {
   const MAX_INTENTOS = 3;
   for (let i = 0; i < MAX_INTENTOS; i++) {
     try {
-      const resp = await fetch(CONFIG.APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+      const resp   = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
       const result = await resp.json();
-      if (result.success) return; // éxito
+      if (result.success) return;
     } catch(e) {
-      // Esperar antes de reintentar
       if (i < MAX_INTENTOS - 1) await new Promise(r => setTimeout(r, 2000));
     }
   }
-  // Si falló después de 3 intentos, avisar discretamente
   showToast('⚠️ No se pudo sincronizar — verificá la conexión', 'error');
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 function limpiarFormulario() {
-  document.getElementById('photoZone').innerHTML = `
-    <div class="photo-icon">📷</div>
-    <div class="photo-hint">Tocá para sacar foto</div>
-  `;
-  document.getElementById('photoZone').classList.remove('has-photo');
-  document.getElementById('photoZone').onclick = () => abrirCamara();
-  document.getElementById('patenteInput').value = '';
+  // Foto
+  const zone = document.getElementById('photoZone');
+  zone.innerHTML = `<div class="photo-icon">📷</div><div class="photo-hint">Tocá para sacar foto</div>`;
+  zone.classList.remove('has-photo');
+  zone.onclick = () => abrirCamara();
+
+  // Inputs básicos
+  document.getElementById('patenteInput').value   = '';
   document.getElementById('conductorInput').value = '';
-  document.getElementById('personaInput').value = '';
-  document.getElementById('obsInput').value = '';
-  document.getElementById('btnIngreso').className = 'tipo-btn';
-  document.getElementById('btnEgreso').className = 'tipo-btn';
+  document.getElementById('personaInput').value   = '';
+  document.getElementById('obsInput').value       = '';
+
+  // Botones básicos
+  document.getElementById('btnIngreso').className  = 'tipo-btn';
+  document.getElementById('btnEgreso').className   = 'tipo-btn';
   document.getElementById('btnVehiculo').className = 'tipo-btn';
-  document.getElementById('btnPersona').className = 'tipo-btn';
+  document.getElementById('btnPersona').className  = 'tipo-btn';
+
+  // Campos vehículo/persona ocultos
   document.getElementById('camposVehiculo').style.display = 'none';
-  document.getElementById('camposPersona').style.display = 'none';
-  state.photoBlob = null;
+  document.getElementById('camposPersona').style.display  = 'none';
+
+  // Estado básico
+  state.photoBlob    = null;
   state.photoDataUrl = null;
-  state.tipo = null;
-  state.sujeto = null;
+  state.tipo         = null;
+  state.sujeto       = null;
+
+  // Limpiar extendidos
+  state.llave       = null;
+  state.acompañante = null;
+  document.getElementById('btnDejaLlave').className    = 'tipo-btn';
+  document.getElementById('btnRetiraLlave').className  = 'tipo-btn';
+  document.getElementById('btnAcompSi').className      = 'tipo-btn';
+  document.getElementById('btnAcompNo').className      = 'tipo-btn';
+  document.getElementById('campoLlave').style.display  = 'none';
+  document.getElementById('campoAcomp').style.display  = 'none';
+  document.getElementById('campoNombresAcomp').classList.remove('visible');
+  document.getElementById('nombresAcompInput').value   = '';
 }
 
 function showScreen(id) {
