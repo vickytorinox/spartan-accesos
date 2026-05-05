@@ -869,10 +869,10 @@ async function enviarRegistro() {
     if (state.sujeto === 'VEHICULO' && !state.llave) {
       showToast('Indicá si deja o retira llave', 'error'); return;
     }
-    if (!state.acompañante) {
+    if (state.sujeto === 'VEHICULO' && !state.acompañante) {
       showToast('Indicá si hay acompañante', 'error'); return;
     }
-    if (state.acompañante === 'SI') {
+    if (state.sujeto === 'VEHICULO' && state.acompañante === 'SI') {
       const nombres = document.getElementById('nombresAcompInput').value.trim();
       if (!nombres) { showToast('Ingresá los nombres de los acompañantes', 'error'); return; }
     }
