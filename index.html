@@ -261,12 +261,15 @@
 
   /* Botón ver registros en info-bar */
   .btn-ver-registros {
-    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
-    font-size: 11px; font-weight: 600; letter-spacing: 1px; padding: 6px 10px;
-    border-radius: 6px; cursor: pointer; white-space: nowrap; margin-top: 6px;
-    display: block; width: 100%;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    padding: 7px 10px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap; margin-top: 8px; display: block; width: 100%;
+    font-family: 'DM Sans', sans-serif;
   }
-  .btn-ver-registros:active { transform: scale(0.97); }
+  .btn-ver-registros:active { background: rgba(29,185,84,0.15); transform: scale(0.97); }
 </style>
 </head>
 <body>
