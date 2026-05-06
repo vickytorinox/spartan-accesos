@@ -21,9 +21,6 @@
     --green-dark: #158a3e;
     --text: #f0f0f0;
     --muted: #666;
-    --accent: #1db954;
-
-    /* Screen 2 light theme */
     --s2-bg: #f0faf4;
     --s2-surface: #ffffff;
     --s2-border: #b8e0c8;
@@ -38,438 +35,193 @@
     background: var(--black);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
     min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     overflow-x: hidden;
   }
 
-  /* ─── HEADER ─── */
   .header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    background: var(--black);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--black); border-bottom: 1px solid var(--border);
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
     z-index: 100;
   }
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 3px;
-    color: var(--red);
-  }
-  .session-timer {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-    letter-spacing: 1px;
-    display: none;
-  }
-  .session-timer.warning { color: #f59e0b; }
-  .session-timer.critical { color: var(--red); animation: pulse 1s infinite; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--text); }
+  .session-timer { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 1px; display: none; }
+  .session-timer.warning  { color: #f59e0b; }
+  .session-timer.critical { color: #e63030; animation: pulse 1s infinite; }
 
-  /* ─── SCREENS ─── */
   .screen {
-    width: 100%;
-    max-width: 480px;
-    padding: 90px 24px 40px;
-    display: none;
-    flex-direction: column;
-    gap: 20px;
-    min-height: 100dvh;
+    width: 100%; max-width: 480px; padding: 80px 24px 40px;
+    display: none; flex-direction: column; gap: 20px; min-height: 100dvh;
   }
   .screen.active { display: flex; }
 
-  /* ─── SCREEN 1 ─── */
-  .brand-block {
-    text-align: center;
-    padding: 20px 0 10px;
-  }
-  .brand-block .title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 52px;
-    letter-spacing: 6px;
-    color: var(--red);
-    line-height: 1;
-  }
-  .brand-block .subtitle {
-    font-size: 11px;
-    letter-spacing: 4px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-top: 6px;
-  }
+  .brand-block { text-align: center; padding: 20px 0 10px; }
+  .brand-block .title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 6px; color: var(--text); line-height: 1; }
+  .brand-block .subtitle { font-size: 11px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
 
   .field-group { display: flex; flex-direction: column; gap: 8px; }
-  .field-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 600;
-  }
+  .field-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 
-  input[type="text"], input[type="number"], textarea, select {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
+  input[type="text"], input[type="number"], textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
   }
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--red);
-  }
+  input:focus, textarea:focus { border-color: var(--green); }
   input[type="number"] { -moz-appearance: textfield; }
 
   .btn {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 3px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-    overflow: hidden;
+    width: 100%; padding: 16px; border: none; border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px;
+    cursor: pointer; transition: all 0.15s;
   }
   .btn:active { transform: scale(0.98); }
-
-  .btn-primary {
-    background: var(--green);
-    color: white;
-  }
+  .btn-primary { background: var(--green); color: white; }
   .btn-primary:hover { background: var(--green-dark); }
-  .btn-primary:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
-
   .btn-secondary {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1px;
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 1px;
   }
 
-  /* ─── SCREEN 2 LIGHT THEME ─── */
-  #screen2 {
-    background: var(--s2-bg);
-    color: var(--s2-text);
-  }
+  /* ─── SCREEN 2 LIGHT ─── */
+  #screen2 { background: var(--s2-bg); color: var(--s2-text); }
   #screen2 .field-label { color: var(--s2-muted); }
-  #screen2 input, #screen2 textarea, #screen2 select {
-    background: var(--s2-surface);
-    border-color: var(--s2-border);
-    color: var(--s2-text);
-  }
-  #screen2 input:focus, #screen2 textarea:focus, #screen2 select:focus {
-    border-color: var(--green);
-  }
-  #screen2 .info-bar {
-    background: var(--s2-header-bg);
-    border-color: #333;
-  }
+  #screen2 input, #screen2 textarea { background: var(--s2-surface); border-color: var(--s2-border); color: var(--s2-text); }
+  #screen2 input:focus, #screen2 textarea:focus { border-color: var(--green); }
+  #screen2 .info-bar { background: var(--s2-header-bg); border-color: #333; }
   #screen2 .info-bar .info-bar-label { color: #888; }
   #screen2 .info-bar .info-bar-value { color: #f0f0f0; }
-  #screen2 .photo-zone {
-    background: var(--s2-surface);
-    border-color: var(--s2-border);
-  }
-  #screen2 .tipo-label {
-    background: var(--s2-surface);
-    border-color: var(--s2-border);
-    color: var(--s2-text);
-  }
-  #screen2 .btn-secondary {
-    background: #e0e0e0;
-    color: #333;
-    border-color: #ccc;
-  }
+  #screen2 .photo-zone { background: var(--s2-surface); border-color: var(--s2-border); }
+  #screen2 .btn-secondary { background: #e0e0e0; color: #333; border-color: #ccc; }
+  #screen2 .tipo-btn { border-color: var(--s2-border); background: var(--s2-surface); color: var(--s2-text); }
+
   .photo-zone {
-    background: var(--surface);
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    min-height: 180px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    position: relative;
-    overflow: hidden;
+    background: var(--surface); border: 2px dashed var(--border); border-radius: 12px;
+    min-height: 160px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; cursor: pointer; transition: border-color 0.2s;
+    position: relative; overflow: hidden;
   }
-  .photo-zone:active { border-color: var(--red); }
+  .photo-zone:active { border-color: var(--green); }
   .photo-zone.has-photo { border-style: solid; border-color: var(--border); }
-  .photo-zone img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0; left: 0;
-    border-radius: 10px;
-  }
+  .photo-zone img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; border-radius: 10px; }
   .photo-overlay {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
+    position: absolute; bottom:0; left:0; right:0;
     background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    padding: 16px;
-    display: flex;
-    justify-content: flex-end;
+    padding: 12px; display: flex; justify-content: flex-end;
   }
   .retake-btn {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    backdrop-filter: blur(4px);
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white;
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer;
   }
-  .photo-icon { font-size: 36px; opacity: 0.4; }
-  .photo-hint { font-size: 13px; color: var(--muted); text-align: center; }
-
-  .ocr-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--muted);
-    min-height: 20px;
-  }
-  .ocr-spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--border);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
+  .photo-icon { font-size: 30px; opacity: 0.4; }
+  .photo-hint { font-size: 12px; color: var(--muted); text-align: center; padding: 0 12px; }
 
   .patente-field {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 6px;
-    text-align: center;
-    text-transform: uppercase;
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 6px;
+    text-align: center; text-transform: uppercase;
   }
-  .patente-field::placeholder {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    letter-spacing: 1px;
-    opacity: 0.3;
-    text-transform: none;
-  }
+  .patente-field::placeholder { font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 1px; opacity: 0.3; text-transform: none; }
 
-  /* Tipo selector */
-  .tipo-selector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+  .tipo-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .tipo-btn {
-    padding: 18px 10px;
-    border: 2px solid var(--s2-border);
-    border-radius: 10px;
-    background: var(--s2-surface);
-    color: var(--s2-text);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.15s;
-    -webkit-appearance: none;
+    padding: 18px 10px; border: 2px solid var(--border); border-radius: 10px;
+    background: var(--surface); color: var(--text);
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px;
+    cursor: pointer; transition: all 0.15s; -webkit-appearance: none;
   }
   .tipo-btn:active { transform: scale(0.97); }
-  .tipo-btn.selected-ingreso {
-    background: #d4f5e2;
-    border-color: #1db954;
-    color: #0f5c2a;
-  }
-  .tipo-btn.selected-egreso {
-    background: #fde8e8;
-    border-color: #e63030;
-    color: #7f1d1d;
-  }
+  .tipo-btn.selected-ingreso     { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
+  .tipo-btn.selected-egreso      { background: #fde8e8; border-color: #e63030; color: #7f1d1d; }
+  .tipo-btn.selected-llave-deja  { background: #fff8e1; border-color: #f59e0b; color: #78350f; }
+  .tipo-btn.selected-llave-retira{ background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+  .tipo-btn.selected-si { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
+  .tipo-btn.selected-no { background: #f3f4f6; border-color: #9ca3af; color: #374151; }
 
-  /* ─── ESTILOS CAMPOS EXTENDIDOS ─── */
+  .campos-extendidos { display: flex; flex-direction: column; gap: 20px; animation: fadeSlideIn 0.25s ease; }
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-  /* Llave selector — igual a ingreso/egreso pero con amarillo */
-  .tipo-btn.selected-llave-deja {
-    background: #fff8e1;
-    border-color: #f59e0b;
-    color: #78350f;
-  }
-  .tipo-btn.selected-llave-retira {
-    background: #eff6ff;
-    border-color: #3b82f6;
-    color: #1e3a5f;
-  }
+  #campoNombresAcomp { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 0; opacity: 0; }
+  #campoNombresAcomp.visible { max-height: 120px; opacity: 1; }
 
-  /* Acompañante selector */
-  .tipo-btn.selected-si {
-    background: #d4f5e2;
-    border-color: #1db954;
-    color: #0f5c2a;
-  }
-  .tipo-btn.selected-no {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    color: #374151;
-  }
+  textarea { resize: none; height: 80px; line-height: 1.5; }
 
-  /* Badge versión extendida */
-  .version-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #fff3cd;
-    border: 1px solid #f59e0b;
-    color: #78350f;
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 20px;
-    margin-left: 8px;
-    vertical-align: middle;
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    z-index: 999;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    white-space: nowrap;
-    max-width: 90vw;
-    text-align: center;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.success { border-color: var(--green); color: var(--green); }
-  .toast.error { border-color: var(--red); color: var(--red); }
-
-  /* Loading overlay */
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(10,10,10,0.85);
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    z-index: 200;
-    backdrop-filter: blur(4px);
-  }
-  .loading-overlay.show { display: flex; }
-  .loading-spinner {
-    width: 44px; height: 44px;
-    border: 3px solid var(--border);
-    border-top-color: var(--red);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .loading-text {
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-  /* Hidden file input */
-  #cameraInput { display: none; }
-
-  /* Info bar screen 2 */
   .info-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
   }
   .info-bar-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
   .info-bar-value { font-size: 13px; font-weight: 600; color: var(--text); }
 
-  textarea {
-    resize: none;
-    height: 80px;
-    line-height: 1.5;
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 24px; font-size: 14px; font-weight: 500;
+    z-index: 999; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap; max-width: 90vw; text-align: center;
   }
+  .toast.show    { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error   { border-color: #e63030; color: #e63030; }
 
-  /* Campos extendidos: animación de entrada */
-  .campos-extendidos {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    animation: fadeSlideIn 0.25s ease;
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(10,10,10,0.85);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; z-index: 200; backdrop-filter: blur(4px);
   }
-  @keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .loading-text { font-size: 13px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
 
-  /* Campo nombres acompañante */
-  #campoNombresAcomp {
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    max-height: 0;
-    opacity: 0;
+  @keyframes spin  { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* ─── PANEL REGISTROS ─── */
+  .registros-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+  .registros-title  { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .registros-count  { font-size: 10px; color: var(--muted); }
+  .registros-lista  {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    overflow-y: auto; max-height: 320px;
   }
-  #campoNombresAcomp.visible {
-    max-height: 120px;
-    opacity: 1;
+  .registro-row {
+    display: grid; grid-template-columns: 56px 1fr auto;
+    border-bottom: 1px solid var(--border);
   }
+  .registro-row:last-child { border-bottom: none; }
+  .registro-hora {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 4px; font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .registro-hora.ing { background: #0d2e18; color: #2a7a44; }
+  .registro-hora.egr { background: #2a0d0d; color: #9a4040; }
+  .r-hora  { font-size: 11px; }
+  .r-fecha { font-size: 9px; opacity: 0.7; margin-top: 1px; }
+  .registro-body  { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; justify-content: center; }
+  .registro-id    { font-size: 12px; font-weight: 600; color: var(--text); }
+  .registro-sub   { font-size: 11px; color: var(--muted); }
+  .registro-badge { padding: 10px 10px; display: flex; align-items: center; }
+  .badge-ing { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #1db954; background: #0d2e18; padding: 3px 8px; border-radius: 20px; border: 1px solid #1a4a26; white-space: nowrap; }
+  .badge-egr { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #e63030; background: #2a0d0d; padding: 3px 8px; border-radius: 20px; border: 1px solid #4a1a1a; white-space: nowrap; }
+  .registros-spinner { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px; color: var(--muted); font-size: 13px; }
+  .mini-spin { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .registros-vacio { text-align: center; padding: 20px; font-size: 13px; color: var(--muted); }
+  .registros-nota  { font-size: 10px; color: #444; text-align: center; padding: 4px 0 8px; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="logo">SPARTAN</div>
   <div class="session-timer" id="sessionTimer">SESIÓN: 10:00</div>
 </div>
 
-<!-- SCREEN 1: CUIL -->
+<!-- SCREEN 1 -->
 <div class="screen active" id="screen1">
   <div class="brand-block">
     <div class="title">ACCESOS</div>
@@ -483,15 +235,28 @@
     <input type="number" id="cuilInput" placeholder="20-12345678-9" inputmode="numeric">
   </div>
 
-  <div id="puestoInfoScreen1" style="background:#1a1a1a; border-radius:8px; padding:12px 16px; border:1px solid #2a2a2a;">
+  <div style="background:#1a1a1a; border-radius:8px; padding:12px 16px; border:1px solid #2a2a2a;">
     <div style="font-size:10px; letter-spacing:2px; color:#666; text-transform:uppercase; margin-bottom:4px;">Objetivo / Puesto</div>
     <div id="puestoInfoLabel" style="font-size:15px; font-weight:600; color:#f0f0f0;">—</div>
   </div>
 
   <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+
+  <div class="divider"></div>
+
+  <div id="registrosPanel" style="display:flex; flex-direction:column; gap:8px;">
+    <div class="registros-header">
+      <div class="registros-title">Últimas 24 hs</div>
+      <div class="registros-count" id="registrosCount"></div>
+    </div>
+    <div class="registros-lista" id="registrosLista">
+      <div class="registros-spinner"><div class="mini-spin"></div>Cargando registros...</div>
+    </div>
+    <div class="registros-nota">Solo lectura · No se pueden modificar</div>
+  </div>
 </div>
 
-<!-- SCREEN 2: REGISTRO -->
+<!-- SCREEN 2 -->
 <div class="screen" id="screen2">
 
   <div class="info-bar">
@@ -507,41 +272,41 @@
     </div>
   </div>
 
-  <!-- Tipo de sujeto -->
   <div class="field-group">
     <div class="field-label">¿Qué registrás?</div>
     <div class="tipo-selector">
-      <button type="button" class="tipo-btn" id="btnVehiculo" onclick="seleccionarSujeto('VEHICULO')">
-        🚗 VEHÍCULO
-      </button>
-      <button type="button" class="tipo-btn" id="btnPersona" onclick="seleccionarSujeto('PERSONA')">
-        🚶 PERSONA
-      </button>
+      <button type="button" class="tipo-btn" id="btnVehiculo" onclick="seleccionarSujeto('VEHICULO')">🚗 VEHÍCULO</button>
+      <button type="button" class="tipo-btn" id="btnPersona"  onclick="seleccionarSujeto('PERSONA')">🚶 PERSONA</button>
     </div>
   </div>
 
-  <!-- Ingreso / Egreso -->
   <div class="field-group">
     <div class="field-label">Movimiento</div>
     <div class="tipo-selector">
-      <button type="button" class="tipo-btn" id="btnIngreso" onclick="seleccionarTipo('INGRESO')">
-        🟢 INGRESO
-      </button>
-      <button type="button" class="tipo-btn" id="btnEgreso" onclick="seleccionarTipo('EGRESO')">
-        🔴 EGRESO
-      </button>
+      <button type="button" class="tipo-btn" id="btnIngreso" onclick="seleccionarTipo('INGRESO')">🟢 INGRESO</button>
+      <button type="button" class="tipo-btn" id="btnEgreso"  onclick="seleccionarTipo('EGRESO')">🔴 EGRESO</button>
     </div>
   </div>
 
   <!-- Campos VEHÍCULO -->
   <div id="camposVehiculo" style="display:none; flex-direction:column; gap:20px;">
+
     <div class="field-group">
-      <div class="field-label">Foto de la patente</div>
-      <div class="photo-zone" id="photoZone" onclick="abrirCamara()">
+      <div class="field-label">📷 Foto de la patente</div>
+      <div class="photo-zone" id="photoZonePatente" onclick="abrirCamara('patente')">
         <div class="photo-icon">📷</div>
-        <div class="photo-hint">Tocá para sacar foto</div>
+        <div class="photo-hint">Tocá para sacar foto de la patente</div>
       </div>
     </div>
+
+    <div class="field-group">
+      <div class="field-label">📷 Foto del baúl</div>
+      <div class="photo-zone" id="photoZoneBaul" onclick="abrirCamara('baul')">
+        <div class="photo-icon">🚗</div>
+        <div class="photo-hint">Tocá para sacar foto del baúl</div>
+      </div>
+    </div>
+
     <div class="field-group">
       <div class="field-label">Patente</div>
       <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB123CD" maxlength="10" style="text-transform:uppercase;">
@@ -560,60 +325,51 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════
-       CAMPOS EXTENDIDOS — solo visibles si version=extended
-       ═══════════════════════════════════════════════════ -->
+  <!-- CAMPOS EXTENDIDOS -->
   <div id="camposExtendidos" class="campos-extendidos" style="display:none;">
 
-    <!-- LLAVE (solo visible cuando sujeto = VEHICULO) -->
     <div id="campoLlave" style="display:none;" class="field-group">
       <div class="field-label">🔑 Llave</div>
       <div class="tipo-selector">
-        <button type="button" class="tipo-btn" id="btnDejaLlave" onclick="seleccionarLlave('DEJA')">
-          🔑 DEJA LLAVE
-        </button>
-        <button type="button" class="tipo-btn" id="btnRetiraLlave" onclick="seleccionarLlave('RETIRA')">
-          🔑 RETIRA LLAVE
-        </button>
+        <button type="button" class="tipo-btn" id="btnDejaLlave"   onclick="seleccionarLlave('DEJA')">🔑 DEJA LLAVE</button>
+        <button type="button" class="tipo-btn" id="btnRetiraLlave" onclick="seleccionarLlave('RETIRA')">🔑 RETIRA LLAVE</button>
       </div>
     </div>
 
-    <!-- ACOMPAÑANTE (solo visible cuando sujeto = VEHICULO) -->
     <div id="campoAcomp" style="display:none;" class="field-group">
       <div class="field-label">Acompañante</div>
       <div class="tipo-selector">
-        <button type="button" class="tipo-btn" id="btnAcompSi" onclick="seleccionarAcompañante('SI')">
-          ✅ SÍ
-        </button>
-        <button type="button" class="tipo-btn" id="btnAcompNo" onclick="seleccionarAcompañante('NO')">
-          ❌ NO
-        </button>
+        <button type="button" class="tipo-btn" id="btnAcompSi" onclick="seleccionarAcompañante('SI')">✅ SÍ</button>
+        <button type="button" class="tipo-btn" id="btnAcompNo" onclick="seleccionarAcompañante('NO')">❌ NO</button>
       </div>
     </div>
 
-    <!-- Nombres (aparece solo si acompañante = SI) -->
     <div id="campoNombresAcomp" class="field-group">
       <div class="field-label">Nombres de los acompañantes</div>
       <textarea id="nombresAcompInput" placeholder="Ej: García Juan, Pérez Ana"></textarea>
     </div>
 
   </div>
-  <!-- ═══ FIN CAMPOS EXTENDIDOS ═══ -->
 
-  <!-- Observaciones — siempre visible -->
   <div class="field-group">
     <div class="field-label">Observaciones</div>
     <textarea id="obsInput" placeholder="Opcional"></textarea>
   </div>
 
-  <button class="btn btn-primary" id="enviarBtn" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
+  <button class="btn btn-primary" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
   <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
 
 </div>
 
-<!-- CAMARA MODAL -->
+<!-- CÁMARA MODAL -->
 <div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column; height:100dvh;">
-  <video id="videoStream" autoplay playsinline style="width:100%; flex:1; object-fit:cover; min-height:0;"></video>
+  <div style="position:relative; flex:1; min-height:0; background:#000;">
+    <video id="videoStream" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+    <div id="camaraLabel" style="position:absolute; top:16px; left:0; right:0; text-align:center; pointer-events:none;">
+      <span style="background:rgba(0,0,0,0.6); color:#fff; font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; padding:6px 18px; border-radius:20px;"></span>
+    </div>
+    <button id="flashBtn" onclick="toggleFlash()" style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.3); color:white; width:48px; height:48px; border-radius:50%; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🔦</button>
+  </div>
   <canvas id="fotoCanvas" style="display:none;"></canvas>
   <div style="padding:16px; display:flex; gap:12px; background:#0a0a0a; flex-shrink:0;">
     <button onclick="cancelarCamara()" style="flex:1; padding:16px; background:#1e1e1e; color:#ccc; border:1px solid #333; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:15px; cursor:pointer;">Cancelar</button>
@@ -631,46 +387,79 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── CONFIGURACIÓN ───────────────────────────────────────────────
 const CONFIG = {
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzgcLn-Cv-L58NXnOLVyewv_AkiR4SAfr9wJRFWSb7nJV_nNyl6vK38KwLcLsPRwZMhxg/exec',
   SESSION_MINUTES: 10,
   SECRET_TOKEN: 'spt_7x9mK2pQvR4nWj8dLz3',
 };
 
-// ─── ESTADO ──────────────────────────────────────────────────────
 let state = {
-  cuil: null,
-  objetivo: null,
-  puesto: null,
-  version: 'basica',       // 'basica' | 'extended'
-  tipo: null,
-  sujeto: null,
-  llave: null,             // null | 'DEJA' | 'RETIRA'
-  acompañante: null,       // null | 'SI' | 'NO'
-  sessionTimer: null,
-  sessionSeconds: CONFIG.SESSION_MINUTES * 60,
-  photoBlob: null,
-  photoDataUrl: null,
+  cuil: null, objetivo: null, puesto: null, version: 'basica',
+  tipo: null, sujeto: null, llave: null, acompañante: null,
+  sessionTimer: null, sessionSeconds: CONFIG.SESSION_MINUTES * 60,
+  photoBlobPatente: null, photoBlobBaul: null,
+  camaraTarget: null, flashActivo: false, streamActivo: null,
 };
 
-// ─── LEER URL PARAMS AL CARGAR ───────────────────────────────────
+// ─── INIT ────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
-  const obj = params.get('objetivo') || 'PRUEBA';
-  const pst = params.get('puesto') || '1';
-  const ver = params.get('version') || 'basica';
-
-  state.objetivo = obj.toUpperCase();
-  state.puesto   = pst.toUpperCase();
-  state.version  = ver.toLowerCase();
+  state.objetivo = (params.get('objetivo') || 'PRUEBA').toUpperCase();
+  state.puesto   = (params.get('puesto')   || '1').toUpperCase();
+  state.version  = (params.get('version')  || 'basica').toLowerCase();
 
   let label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
-  if (state.version === 'extended') {
-    label += ' · EXTENDIDO';
-  }
+  if (state.version === 'extended') label += ' · EXTENDIDO';
   document.getElementById('puestoInfoLabel').textContent = label;
+
+  cargarRegistros();
 });
+
+// ─── REGISTROS ───────────────────────────────────────────────────
+async function cargarRegistros() {
+  const lista = document.getElementById('registrosLista');
+  try {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=registros&objetivo=${encodeURIComponent(state.objetivo)}&puesto=${encodeURIComponent(state.puesto)}&token=${CONFIG.SECRET_TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (!data.success || !data.registros || data.registros.length === 0) {
+      lista.innerHTML = `<div class="registros-vacio">Sin registros en las últimas 24 hs</div>`;
+      document.getElementById('registrosCount').textContent = '';
+      return;
+    }
+
+    const regs = data.registros;
+    document.getElementById('registrosCount').textContent = `${regs.length} registro${regs.length !== 1 ? 's' : ''}`;
+
+    lista.innerHTML = regs.map(r => {
+      const esIng     = r.tipo === 'INGRESO';
+      const esVeh     = r.patente && r.patente !== 'CAMINANDO';
+      const icono     = esVeh ? '🚗' : '🚶';
+      const idLinea   = esVeh ? `${icono} ${r.patente}` : `${icono} ${r.conductor}`;
+      let   subLinea  = esVeh ? r.conductor : 'Persona';
+      if (r.llave) subLinea += ` · 🔑 ${r.llave === 'DEJA' ? 'Deja llave' : 'Retira llave'}`;
+      const fechaCorta = r.fecha ? r.fecha.slice(0,5) : '';
+
+      return `<div class="registro-row">
+        <div class="registro-hora ${esIng ? 'ing' : 'egr'}">
+          <span class="r-hora">${r.hora}</span>
+          <span class="r-fecha">${fechaCorta}</span>
+        </div>
+        <div class="registro-body">
+          <div class="registro-id">${idLinea}</div>
+          <div class="registro-sub">${subLinea}</div>
+        </div>
+        <div class="registro-badge">
+          <span class="${esIng ? 'badge-ing' : 'badge-egr'}">${r.tipo}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    lista.innerHTML = `<div class="registros-vacio">No se pudieron cargar los registros</div>`;
+  }
+}
 
 // ─── SESIÓN ──────────────────────────────────────────────────────
 function iniciarSesion() {
@@ -683,8 +472,6 @@ function iniciarSesion() {
   showScreen('screen2');
   document.getElementById('sessionTimer').style.display = 'block';
   iniciarTimer();
-
-  // Mostrar campos extendidos si corresponde
   if (state.version === 'extended') {
     document.getElementById('camposExtendidos').style.display = 'flex';
   }
@@ -700,9 +487,7 @@ function iniciarTimer() {
   }, 1000);
 }
 
-function resetTimer() {
-  state.sessionSeconds = CONFIG.SESSION_MINUTES * 60;
-}
+function resetTimer() { state.sessionSeconds = CONFIG.SESSION_MINUTES * 60; }
 
 function actualizarTimerDisplay() {
   const m = Math.floor(state.sessionSeconds / 60);
@@ -717,20 +502,17 @@ function actualizarTimerDisplay() {
 function cerrarSesion() {
   clearInterval(state.sessionTimer);
   state.cuil = null;
-  state.photoBlob = null;
-  state.photoDataUrl = null;
-  state.tipo = null;
   document.getElementById('sessionTimer').style.display = 'none';
   limpiarFormulario();
   document.getElementById('cuilInput').value = '';
   showScreen('screen1');
+  cargarRegistros();
 }
 
-// Reset timer on any interaction
 document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
-document.addEventListener('click', () => { if (state.cuil) resetTimer(); });
+document.addEventListener('click',      () => { if (state.cuil) resetTimer(); });
 
-// ─── SELECTORES BÁSICOS ──────────────────────────────────────────
+// ─── SELECTORES ──────────────────────────────────────────────────
 function seleccionarSujeto(sujeto) {
   state.sujeto = sujeto;
   document.getElementById('btnVehiculo').className = 'tipo-btn' + (sujeto === 'VEHICULO' ? ' selected-ingreso' : '');
@@ -742,28 +524,22 @@ function seleccionarSujeto(sujeto) {
   const ca = document.getElementById('campoAcomp');
 
   if (sujeto === 'VEHICULO') {
-    v.style.display = 'flex';
-    p.style.display = 'none';
-    // Mostrar llave y acompañante solo en versión extendida
+    v.style.display = 'flex'; p.style.display = 'none';
     if (state.version === 'extended') {
       if (cl) cl.style.display = 'flex';
       if (ca) ca.style.display = 'flex';
     }
   } else {
-    v.style.display = 'none';
-    p.style.display = 'flex';
-    // Ocultar y resetear llave
+    v.style.display = 'none'; p.style.display = 'flex';
     if (cl) cl.style.display = 'none';
-    state.llave = null;
+    if (ca) ca.style.display = 'none';
+    state.llave = null; state.acompañante = null;
     document.getElementById('btnDejaLlave').className   = 'tipo-btn';
     document.getElementById('btnRetiraLlave').className = 'tipo-btn';
-    // Ocultar y resetear acompañante
-    if (ca) ca.style.display = 'none';
-    state.acompañante = null;
-    document.getElementById('btnAcompSi').className = 'tipo-btn';
-    document.getElementById('btnAcompNo').className = 'tipo-btn';
+    document.getElementById('btnAcompSi').className     = 'tipo-btn';
+    document.getElementById('btnAcompNo').className     = 'tipo-btn';
     document.getElementById('campoNombresAcomp').classList.remove('visible');
-    document.getElementById('nombresAcompInput').value = '';
+    document.getElementById('nombresAcompInput').value  = '';
   }
 }
 
@@ -773,7 +549,6 @@ function seleccionarTipo(tipo) {
   document.getElementById('btnEgreso').className  = 'tipo-btn' + (tipo === 'EGRESO'  ? ' selected-egreso'  : '');
 }
 
-// ─── SELECTORES EXTENDIDOS ───────────────────────────────────────
 function seleccionarLlave(opcion) {
   state.llave = opcion;
   document.getElementById('btnDejaLlave').className   = 'tipo-btn' + (opcion === 'DEJA'   ? ' selected-llave-deja'   : '');
@@ -782,30 +557,37 @@ function seleccionarLlave(opcion) {
 
 function seleccionarAcompañante(opcion) {
   state.acompañante = opcion;
-  document.getElementById('btnAcompSi').className = 'tipo-btn' + (opcion === 'SI' ? ' selected-si'  : '');
-  document.getElementById('btnAcompNo').className = 'tipo-btn' + (opcion === 'NO' ? ' selected-no'  : '');
-
-  const campoNombres = document.getElementById('campoNombresAcomp');
+  document.getElementById('btnAcompSi').className = 'tipo-btn' + (opcion === 'SI' ? ' selected-si' : '');
+  document.getElementById('btnAcompNo').className = 'tipo-btn' + (opcion === 'NO' ? ' selected-no' : '');
+  const campo = document.getElementById('campoNombresAcomp');
   if (opcion === 'SI') {
-    campoNombres.classList.add('visible');
+    campo.classList.add('visible');
   } else {
-    campoNombres.classList.remove('visible');
+    campo.classList.remove('visible');
     document.getElementById('nombresAcompInput').value = '';
   }
 }
 
-// ─── CÁMARA API ──────────────────────────────────────────────────
-let streamActivo = null;
-
-async function abrirCamara() {
+// ─── CÁMARA ──────────────────────────────────────────────────────
+async function abrirCamara(target) {
+  state.camaraTarget = target;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
-    streamActivo = stream;
-    const video = document.getElementById('videoStream');
-    video.srcObject = stream;
+    state.streamActivo = stream;
+    document.getElementById('videoStream').srcObject = stream;
+
+    // Label contextual
+    const labelEl = document.getElementById('camaraLabel').querySelector('span');
+    labelEl.textContent = target === 'patente' ? '📷 FOTO PATENTE' : '🚗 FOTO BAÚL';
+
+    // Flash automático nocturno
+    const hora = new Date().getHours();
+    const esNoche = hora >= 19 || hora < 7;
+    await activarFlash(esNoche);
+
     const modal = document.getElementById('camaraModal');
     modal.style.display = 'flex';
     modal.style.flexDirection = 'column';
@@ -815,10 +597,29 @@ async function abrirCamara() {
   }
 }
 
+async function activarFlash(encendido) {
+  state.flashActivo = encendido;
+  actualizarBotonFlash();
+  if (!state.streamActivo) return;
+  try {
+    const track = state.streamActivo.getVideoTracks()[0];
+    if (track && track.getCapabilities && track.getCapabilities().torch) {
+      await track.applyConstraints({ advanced: [{ torch: encendido }] });
+    }
+  } catch(e) {}
+}
+
+async function toggleFlash() { await activarFlash(!state.flashActivo); }
+
+function actualizarBotonFlash() {
+  const btn = document.getElementById('flashBtn');
+  btn.style.background   = state.flashActivo ? 'rgba(255,220,0,0.35)' : 'rgba(0,0,0,0.5)';
+  btn.style.borderColor  = state.flashActivo ? 'rgba(255,220,0,0.8)'  : 'rgba(255,255,255,0.3)';
+}
+
 function tomarFoto() {
   const video = document.getElementById('videoStream');
   const canvas = document.getElementById('fotoCanvas');
-
   const MAX = 800;
   const ratio = Math.min(MAX / video.videoWidth, MAX / video.videoHeight, 1);
   canvas.width  = Math.round(video.videoWidth  * ratio);
@@ -826,33 +627,45 @@ function tomarFoto() {
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
 
   canvas.toBlob((blob) => {
-    state.photoBlob = blob;
     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-    state.photoDataUrl = dataUrl;
+    const target  = state.camaraTarget;
     cerrarStreamCamara();
-    mostrarFotoPreview(dataUrl);
+    if (target === 'patente') {
+      state.photoBlobPatente = blob;
+      mostrarFotoPreview('photoZonePatente', dataUrl, 'patente');
+    } else {
+      state.photoBlobBaul = blob;
+      mostrarFotoPreview('photoZoneBaul', dataUrl, 'baul');
+    }
   }, 'image/jpeg', 0.7);
 }
 
 function cancelarCamara() { cerrarStreamCamara(); }
 
 function cerrarStreamCamara() {
-  if (streamActivo) {
-    streamActivo.getTracks().forEach(t => t.stop());
-    streamActivo = null;
+  if (state.streamActivo) {
+    try {
+      const track = state.streamActivo.getVideoTracks()[0];
+      if (track && track.getCapabilities && track.getCapabilities().torch) {
+        track.applyConstraints({ advanced: [{ torch: false }] });
+      }
+    } catch(e) {}
+    state.streamActivo.getTracks().forEach(t => t.stop());
+    state.streamActivo = null;
   }
+  state.flashActivo = false;
+  actualizarBotonFlash();
   document.getElementById('camaraModal').style.display = 'none';
   document.body.style.overflow = '';
 }
 
-function mostrarFotoPreview(dataUrl) {
-  const zone = document.getElementById('photoZone');
+function mostrarFotoPreview(zoneId, dataUrl, target) {
+  const zone = document.getElementById(zoneId);
   zone.innerHTML = `
-    <img src="${dataUrl}" alt="Foto patente">
+    <img src="${dataUrl}" alt="Foto ${target}">
     <div class="photo-overlay">
-      <button class="retake-btn" onclick="abrirCamara(); event.stopPropagation();">📷 Retomar</button>
-    </div>
-  `;
+      <button class="retake-btn" onclick="abrirCamara('${target}'); event.stopPropagation();">📷 Retomar</button>
+    </div>`;
   zone.classList.add('has-photo');
   zone.onclick = null;
 }
@@ -864,7 +677,6 @@ async function enviarRegistro() {
   if (!state.sujeto) { showToast('Seleccioná Vehículo o Persona', 'error'); return; }
   if (!state.tipo)   { showToast('Seleccioná INGRESO o EGRESO',    'error'); return; }
 
-  // Validaciones extendidas
   if (state.version === 'extended') {
     if (state.sujeto === 'VEHICULO' && !state.llave) {
       showToast('Indicá si deja o retira llave', 'error'); return;
@@ -873,28 +685,27 @@ async function enviarRegistro() {
       showToast('Indicá si hay acompañante', 'error'); return;
     }
     if (state.sujeto === 'VEHICULO' && state.acompañante === 'SI') {
-      const nombres = document.getElementById('nombresAcompInput').value.trim();
-      if (!nombres) { showToast('Ingresá los nombres de los acompañantes', 'error'); return; }
+      if (!document.getElementById('nombresAcompInput').value.trim()) {
+        showToast('Ingresá los nombres de los acompañantes', 'error'); return;
+      }
     }
   }
 
-  let patente  = '';
-  let conductor = '';
+  let patente = '', conductor = '';
 
   if (state.sujeto === 'VEHICULO') {
     patente   = document.getElementById('patenteInput').value.trim().toUpperCase();
     conductor = document.getElementById('conductorInput').value.trim();
-    if (!state.photoBlob) { showToast('Sacá una foto de la patente', 'error'); return; }
-    if (!patente)         { showToast('Ingresá la patente',           'error'); return; }
-    if (!conductor)       { showToast('Ingresá el nombre del conductor', 'error'); return; }
+    if (!state.photoBlobPatente) { showToast('Sacá la foto de la patente', 'error'); return; }
+    if (!state.photoBlobBaul)    { showToast('Sacá la foto del baúl',       'error'); return; }
+    if (!patente)                { showToast('Ingresá la patente',           'error'); return; }
+    if (!conductor)              { showToast('Ingresá el nombre del conductor', 'error'); return; }
   } else {
     const persona = document.getElementById('personaInput').value.trim();
     if (!persona) { showToast('Ingresá el nombre de la persona', 'error'); return; }
-    patente   = 'CAMINANDO';
-    conductor = persona;
+    patente = 'CAMINANDO'; conductor = persona;
   }
 
-  const tipo  = state.tipo;
   const ahora = new Date();
   const fecha = formatFecha(ahora);
   const hora  = formatHora(ahora);
@@ -907,67 +718,57 @@ async function enviarRegistro() {
       const pos = await getLocation();
       latitud  = pos.coords.latitude.toFixed(6);
       longitud = pos.coords.longitude.toFixed(6);
-    } catch(e) { /* ubicación opcional */ }
+    } catch(e) {}
 
-    let fotoBase64 = '', fotoExt = '', nombreFoto = '';
-    if (state.sujeto === 'VEHICULO' && state.photoBlob) {
-      fotoBase64  = await blobToBase64(state.photoBlob);
-      fotoExt     = state.photoBlob.type.split('/')[1] || 'jpg';
-      nombreFoto  = `${fecha.replace(/\//g,'-')}_${hora.replace(':','')}_${patente}.${fotoExt}`;
+    let fotoBase64Patente = '', fotoBase64Baul = '';
+    let nombreFotoPatente = '', nombreFotoBaul = '';
+
+    if (state.sujeto === 'VEHICULO') {
+      const fechaStr = fecha.replace(/\//g, '-');
+      const horaStr  = hora.replace(':', '');
+      fotoBase64Patente = await blobToBase64(state.photoBlobPatente);
+      nombreFotoPatente = `${fechaStr}_${horaStr}_${patente}_patente.jpg`;
+      fotoBase64Baul    = await blobToBase64(state.photoBlobBaul);
+      nombreFotoBaul    = `${fechaStr}_${horaStr}_${patente}_baul.jpg`;
     }
 
-    // Campos extendidos — vacíos en versión básica
-    const llave             = state.version === 'extended' ? (state.llave || '') : '';
-    const acompañante       = state.version === 'extended' ? (state.acompañante || '') : '';
+    const llave               = state.version === 'extended' ? (state.llave || '') : '';
+    const acompañante         = state.version === 'extended' ? (state.acompañante || '') : '';
     const nombresAcompañantes = (state.version === 'extended' && state.acompañante === 'SI')
-                                ? document.getElementById('nombresAcompInput').value.trim()
-                                : '';
+                                ? document.getElementById('nombresAcompInput').value.trim() : '';
 
     const payload = {
       token: CONFIG.SECRET_TOKEN,
-      cuil: state.cuil,
-      fecha,
-      hora,
-      objetivo: state.objetivo || '',
-      puesto:   state.puesto   || '',
-      version:  state.version,
-      tipo,
-      patente,
-      conductor,
-      observaciones: obs,
-      latitud,
-      longitud,
-      fotoBase64,
-      fotoExt,
-      nombreFoto,
-      // Campos extendidos
-      llave,
-      acompañante,
-      nombresAcompañantes,
+      cuil: state.cuil, fecha, hora,
+      objetivo: state.objetivo || '', puesto: state.puesto || '', version: state.version,
+      tipo: state.tipo, patente, conductor, observaciones: obs,
+      latitud, longitud,
+      fotoBase64Patente, nombreFotoPatente,
+      fotoBase64Baul,    nombreFotoBaul,
+      llave, acompañante, nombresAcompañantes,
     };
 
     hideLoading();
     showToast('✅ Registro guardado', 'success');
     limpiarFormulario();
     resetTimer();
-
     enviarEnBackground(payload);
 
   } catch(err) {
     hideLoading();
-    showToast('Error al preparar el registro: ' + err.message, 'error');
+    showToast('Error: ' + err.message, 'error');
   }
 }
 
 async function enviarEnBackground(payload) {
-  const MAX_INTENTOS = 3;
-  for (let i = 0; i < MAX_INTENTOS; i++) {
+  const MAX = 3;
+  for (let i = 0; i < MAX; i++) {
     try {
       const resp   = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
       const result = await resp.json();
       if (result.success) return;
     } catch(e) {
-      if (i < MAX_INTENTOS - 1) await new Promise(r => setTimeout(r, 2000));
+      if (i < MAX - 1) await new Promise(r => setTimeout(r, 2000));
     }
   }
   showToast('⚠️ No se pudo sincronizar — verificá la conexión', 'error');
@@ -975,45 +776,40 @@ async function enviarEnBackground(payload) {
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 function limpiarFormulario() {
-  // Foto
-  const zone = document.getElementById('photoZone');
-  zone.innerHTML = `<div class="photo-icon">📷</div><div class="photo-hint">Tocá para sacar foto</div>`;
-  zone.classList.remove('has-photo');
-  zone.onclick = () => abrirCamara();
+  const resetZone = (id, target, icono, hint) => {
+    const z = document.getElementById(id);
+    z.innerHTML = `<div class="photo-icon">${icono}</div><div class="photo-hint">${hint}</div>`;
+    z.classList.remove('has-photo');
+    z.onclick = () => abrirCamara(target);
+  };
+  resetZone('photoZonePatente', 'patente', '📷', 'Tocá para sacar foto de la patente');
+  resetZone('photoZoneBaul',    'baul',    '🚗', 'Tocá para sacar foto del baúl');
 
-  // Inputs básicos
   document.getElementById('patenteInput').value   = '';
   document.getElementById('conductorInput').value = '';
   document.getElementById('personaInput').value   = '';
   document.getElementById('obsInput').value       = '';
 
-  // Botones básicos
   document.getElementById('btnIngreso').className  = 'tipo-btn';
   document.getElementById('btnEgreso').className   = 'tipo-btn';
   document.getElementById('btnVehiculo').className = 'tipo-btn';
   document.getElementById('btnPersona').className  = 'tipo-btn';
 
-  // Campos vehículo/persona ocultos
   document.getElementById('camposVehiculo').style.display = 'none';
   document.getElementById('camposPersona').style.display  = 'none';
 
-  // Estado básico
-  state.photoBlob    = null;
-  state.photoDataUrl = null;
-  state.tipo         = null;
-  state.sujeto       = null;
+  state.photoBlobPatente = null; state.photoBlobBaul = null;
+  state.tipo = null; state.sujeto = null;
+  state.llave = null; state.acompañante = null;
 
-  // Limpiar extendidos
-  state.llave       = null;
-  state.acompañante = null;
-  document.getElementById('btnDejaLlave').className    = 'tipo-btn';
-  document.getElementById('btnRetiraLlave').className  = 'tipo-btn';
-  document.getElementById('btnAcompSi').className      = 'tipo-btn';
-  document.getElementById('btnAcompNo').className      = 'tipo-btn';
-  document.getElementById('campoLlave').style.display  = 'none';
-  document.getElementById('campoAcomp').style.display  = 'none';
+  document.getElementById('btnDejaLlave').className   = 'tipo-btn';
+  document.getElementById('btnRetiraLlave').className = 'tipo-btn';
+  document.getElementById('btnAcompSi').className     = 'tipo-btn';
+  document.getElementById('btnAcompNo').className     = 'tipo-btn';
+  document.getElementById('campoLlave').style.display = 'none';
+  document.getElementById('campoAcomp').style.display = 'none';
   document.getElementById('campoNombresAcomp').classList.remove('visible');
-  document.getElementById('nombresAcompInput').value   = '';
+  document.getElementById('nombresAcompInput').value  = '';
 }
 
 function showScreen(id) {
@@ -1023,8 +819,7 @@ function showScreen(id) {
 
 function actualizarFecha() {
   const ahora = new Date();
-  document.getElementById('fechaDisplay').textContent =
-    `${formatFecha(ahora)} ${formatHora(ahora)}`;
+  document.getElementById('fechaDisplay').textContent = `${formatFecha(ahora)} ${formatHora(ahora)}`;
 }
 
 function formatFecha(d) {
@@ -1033,13 +828,9 @@ function formatFecha(d) {
 function formatHora(d) {
   return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
 }
-
 function getLocation() {
-  return new Promise((res, rej) =>
-    navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
-  );
+  return new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 }));
 }
-
 function blobToBase64(blob) {
   return new Promise((res, rej) => {
     const r = new FileReader();
@@ -1055,9 +846,8 @@ function showToast(msg, type = '') {
   el.textContent = msg;
   el.className = 'toast show ' + type;
   clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 3500);
 }
-
 function showLoading(text = 'Procesando...') {
   document.getElementById('loadingText').textContent = text;
   document.getElementById('loadingOverlay').classList.add('show');
@@ -1066,7 +856,6 @@ function hideLoading() {
   document.getElementById('loadingOverlay').classList.remove('show');
 }
 
-// Actualizar hora cada minuto en screen2
 setInterval(() => { if (state.cuil) actualizarFecha(); }, 60000);
 </script>
 </body>
