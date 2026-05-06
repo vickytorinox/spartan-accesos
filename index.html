@@ -135,12 +135,18 @@
     cursor: pointer; transition: all 0.15s; -webkit-appearance: none;
   }
   .tipo-btn:active { transform: scale(0.97); }
-  .tipo-btn.selected-ingreso     { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
-  .tipo-btn.selected-egreso      { background: #fde8e8; border-color: #e63030; color: #7f1d1d; }
-  .tipo-btn.selected-llave-deja  { background: #fff8e1; border-color: #f59e0b; color: #78350f; }
-  .tipo-btn.selected-llave-retira{ background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
-  .tipo-btn.selected-si { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
-  .tipo-btn.selected-no { background: #f3f4f6; border-color: #9ca3af; color: #374151; }
+  .tipo-btn.selected-ingreso,
+  #screen2 .tipo-btn.selected-ingreso      { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
+  .tipo-btn.selected-egreso,
+  #screen2 .tipo-btn.selected-egreso       { background: #fde8e8; border-color: #e63030; color: #7f1d1d; }
+  .tipo-btn.selected-llave-deja,
+  #screen2 .tipo-btn.selected-llave-deja   { background: #fff8e1; border-color: #f59e0b; color: #78350f; }
+  .tipo-btn.selected-llave-retira,
+  #screen2 .tipo-btn.selected-llave-retira { background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+  .tipo-btn.selected-si,
+  #screen2 .tipo-btn.selected-si           { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
+  .tipo-btn.selected-no,
+  #screen2 .tipo-btn.selected-no           { background: #f3f4f6; border-color: #9ca3af; color: #374151; }
 
   .campos-extendidos { display: flex; flex-direction: column; gap: 20px; animation: fadeSlideIn 0.25s ease; }
   @keyframes fadeSlideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
@@ -388,7 +394,7 @@
 
 <script>
 const CONFIG = {
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzgcLn-Cv-L58NXnOLVyewv_AkiR4SAfr9wJRFWSb7nJV_nNyl6vK38KwLcLsPRwZMhxg/exec',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwcOb2NZX4FNQYTS_6koxlWXQT2fAX0M3bl8HAEArxVVJNVM02-4XBzKpoVMJD82mdC6Q/exec',
   SESSION_MINUTES: 10,
   SECRET_TOKEN: 'spt_7x9mK2pQvR4nWj8dLz3',
 };
