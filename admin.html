@@ -115,6 +115,7 @@
     white-space: nowrap;
   }
   .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
   .btn-green { background: var(--green); color: white; }
   .btn-green:hover { background: #155c2d; }
   .btn-outline {
@@ -247,6 +248,7 @@
   }
   .empty-icon { font-size: 40px; margin-bottom: 12px; }
   .empty-text { font-size: 15px; }
+  .loading-msg { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 
   /* BASE URL CONFIG */
   .config-bar {
@@ -311,6 +313,56 @@
     background: #fff8e1; color: #78350f; border: 1px solid #f59e0b;
     margin-left: 6px; vertical-align: middle;
   }
+
+  /* ─── FLOTA DE DISPOSITIVOS ─── */
+  .fleet-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .add-device-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .device-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .device-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .device-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .device-alias {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px; letter-spacing: 2px; color: var(--text);
+  }
+  .device-assign { font-size: 13px; color: var(--text); font-weight: 500; }
+  .device-conex { font-size: 11px; color: var(--muted); }
+  .device-conex.stale { color: var(--danger); }
+  .device-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .device-editor {
+    display: none;
+    padding: 16px 20px 20px;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .device-editor.open { display: flex; }
+  .device-editor input[type="text"] { background: var(--surface); }
+  .editor-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
 </style>
 </head>
 <body>
@@ -340,16 +392,48 @@
 </div>
 
 <div class="main">
-</div> <!-- /header -->
-<div class="main">
 
   <!-- BASE URL CONFIG -->
   <div class="section-title">URL base de la app</div>
   <div class="config-bar">
     <label>URL Base</label>
-    <input type="text" id="baseUrlInput" placeholder="https://tu-usuario.github.io/spartan-accesos/" oninput="guardarConfig()">
-    <span style="font-size:12px; color:#4a7a5c;">Modificá con tu URL real de GitHub Pages</span>
+    <input type="text" id="baseUrlInput" placeholder="https://ingresos.sgseguridad.com/" oninput="guardarConfig()">
+    <span style="font-size:12px; color:#4a7a5c;">Modificá con tu URL real</span>
   </div>
+
+  <!-- FLOTA DE DISPOSITIVOS -->
+  <div class="section-title">Flota de dispositivos</div>
+  <div class="fleet-bar">
+    <button class="btn btn-outline" onclick="cargarDispositivos()">↻ Actualizar</button>
+    <button class="btn btn-green" onclick="toggleAddDevice()">+ AGREGAR DISPOSITIVO</button>
+  </div>
+
+  <div id="addDeviceForm" class="add-device-form" style="display:none;">
+    <div class="form-field">
+      <div class="form-label">Alias</div>
+      <input type="text" id="newDevAlias" placeholder="Ej: TABLET-05">
+    </div>
+    <div class="form-field">
+      <div class="form-label">Objetivo</div>
+      <input type="text" id="newDevObj" placeholder="Ej: Banco Provincia" list="objetivosDatalist">
+    </div>
+    <div class="form-field">
+      <div class="form-label">Puesto</div>
+      <input type="text" id="newDevPst" placeholder="Ej: 1">
+    </div>
+    <div class="form-field" style="flex:0 0 auto;">
+      <div class="form-label">Versión</div>
+      <div class="version-toggle">
+        <button id="newDevVerB" class="active-basica" onclick="setNewDevVersion('basica')">Básico</button>
+        <button id="newDevVerE" onclick="setNewDevVersion('extended')">Extendido</button>
+      </div>
+    </div>
+    <button class="btn btn-green" onclick="agregarDispositivo(this)">+ GUARDAR</button>
+  </div>
+
+  <div id="dispositivosList"></div>
+
+  <div style="height:32px;"></div>
 
   <!-- ADD OBJETIVO -->
   <div class="section-title">Agregar objetivo</div>
@@ -367,7 +451,13 @@
 
 </div>
 
+<datalist id="objetivosDatalist"></datalist>
+
 <script>
+// ─── BACKEND ──────────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcOb2NZX4FNQYTS_6koxlWXQT2fAX0M3bl8HAEArxVVJNVM02-4XBzKpoVMJD82mdC6Q/exec';
+const SECRET_TOKEN = 'spt_7x9mK2pQvR4nWj8dLz3';
+
 // ─── STORAGE ──────────────────────────────────────────────────
 function cargarDatos() {
   try {
@@ -431,8 +521,7 @@ function eliminarObjetivo(idx) {
   renderAll();
 }
 
-// ─── VERSION TOGGLE ───────────────────────────────────────────
-// Guarda la selección temporaria de versión por objetivo
+// ─── VERSION TOGGLE (puestos) ─────────────────────────────────
 const versionSeleccionada = {};
 
 function setVersionToggle(objIdx, ver) {
@@ -482,7 +571,7 @@ function copiarUrl(url, btnId) {
   });
 }
 
-// ─── TOGGLE ───────────────────────────────────────────────────
+// ─── TOGGLE OBJETIVO ──────────────────────────────────────────
 function toggleObjetivo(idx) {
   const body = document.getElementById(`body_${idx}`);
   const chevron = document.getElementById(`chevron_${idx}`);
@@ -490,10 +579,11 @@ function toggleObjetivo(idx) {
   chevron.classList.toggle('open');
 }
 
-// ─── RENDER ───────────────────────────────────────────────────
+// ─── RENDER OBJETIVOS ─────────────────────────────────────────
 function renderAll() {
+  actualizarObjetivosDatalist();
   const data = cargarDatos();
-  const baseUrl = data.baseUrl || 'https://TU-USUARIO.github.io/spartan-accesos/';
+  const baseUrl = data.baseUrl || 'https://ingresos.sgseguridad.com/';
   const container = document.getElementById('objetivosList');
 
   if (data.objetivos.length === 0) {
@@ -553,6 +643,168 @@ function renderAll() {
   `).join('');
 }
 
+function actualizarObjetivosDatalist() {
+  const dl = document.getElementById('objetivosDatalist');
+  if (!dl) return;
+  const data = cargarDatos();
+  dl.innerHTML = data.objetivos.map(o => `<option value="${slugify(o.nombre)}">`).join('');
+}
+
+// ─── FLOTA DE DISPOSITIVOS ────────────────────────────────────
+let devEditVersion = {};
+let newDevVersion = 'basica';
+
+function toggleAddDevice() {
+  const f = document.getElementById('addDeviceForm');
+  f.style.display = (f.style.display === 'none' || !f.style.display) ? 'flex' : 'none';
+}
+
+function setNewDevVersion(v) {
+  newDevVersion = v;
+  document.getElementById('newDevVerB').className = v === 'basica'   ? 'active-basica'   : '';
+  document.getElementById('newDevVerE').className = v === 'extended' ? 'active-extended' : '';
+}
+
+async function cargarDispositivos() {
+  const cont = document.getElementById('dispositivosList');
+  cont.innerHTML = `<div class="loading-msg">Cargando dispositivos...</div>`;
+  try {
+    const url = `${APPS_SCRIPT_URL}?action=listarDispositivos&token=${SECRET_TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!data.success) { cont.innerHTML = `<div class="empty"><div class="empty-text">Error al cargar la flota.</div></div>`; return; }
+    renderDispositivos(data.dispositivos || []);
+  } catch(e) {
+    cont.innerHTML = `<div class="empty"><div class="empty-text">No se pudo conectar con el backend.</div></div>`;
+  }
+}
+
+function esStale(s) {
+  if (!s) return false;
+  const m = s.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+  if (!m) return false;
+  const dt = new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
+  return (Date.now() - dt.getTime()) > 24 * 60 * 60 * 1000;
+}
+
+function renderDispositivos(lista) {
+  const cont = document.getElementById('dispositivosList');
+  devEditVersion = {};
+
+  if (!lista.length) {
+    cont.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📱</div>
+        <div class="empty-text">No hay dispositivos registrados todavía.<br>Se registran solos cuando configurás una tablet, o agregá uno manual arriba.</div>
+      </div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map((d, i) => {
+    devEditVersion[i] = d.version === 'extended' ? 'extended' : 'basica';
+    const badge = d.version === 'extended'
+      ? `<span class="badge-extended">Extendido</span>`
+      : `<span class="badge-basica">Básico</span>`;
+    const conex = d.ultimaConexion || 'nunca';
+    const stale = esStale(d.ultimaConexion);
+    const aliasEnc = encodeURIComponent(d.alias);
+
+    return `
+      <div class="device-card">
+        <div class="device-head">
+          <div class="device-main">
+            <div class="device-alias">📱 ${d.alias}</div>
+            <div class="device-assign">${d.objetivo || '—'} · Puesto ${d.puesto || '—'} ${badge}</div>
+            <div class="device-conex ${stale ? 'stale' : ''}">Última conexión: ${conex}</div>
+          </div>
+          <div class="device-actions">
+            <button class="btn btn-outline" onclick="toggleEditor(${i})">Reasignar</button>
+          </div>
+        </div>
+        <div class="device-editor" id="devEditor_${i}">
+          <div class="editor-row">
+            <div class="form-field">
+              <div class="form-label">Objetivo</div>
+              <input type="text" id="devObj_${i}" value="${d.objetivo || ''}" list="objetivosDatalist">
+            </div>
+            <div class="form-field">
+              <div class="form-label">Puesto</div>
+              <input type="text" id="devPst_${i}" value="${d.puesto || ''}">
+            </div>
+            <div class="form-field" style="flex:0 0 auto;">
+              <div class="form-label">Versión</div>
+              <div class="version-toggle">
+                <button id="devVerB_${i}" class="${devEditVersion[i] === 'basica' ? 'active-basica' : ''}" onclick="setDevEditVersion(${i},'basica')">Básico</button>
+                <button id="devVerE_${i}" class="${devEditVersion[i] === 'extended' ? 'active-extended' : ''}" onclick="setDevEditVersion(${i},'extended')">Extendido</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-green" onclick="guardarReasignacion(${i}, '${aliasEnc}', this)">GUARDAR</button>
+            <button class="btn btn-outline" onclick="toggleEditor(${i})">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleEditor(i) {
+  document.getElementById(`devEditor_${i}`).classList.toggle('open');
+}
+
+function setDevEditVersion(i, v) {
+  devEditVersion[i] = v;
+  document.getElementById(`devVerB_${i}`).className = v === 'basica'   ? 'active-basica'   : '';
+  document.getElementById(`devVerE_${i}`).className = v === 'extended' ? 'active-extended' : '';
+}
+
+function guardarReasignacion(i, aliasEnc, btn) {
+  const alias = decodeURIComponent(aliasEnc);
+  const obj = document.getElementById(`devObj_${i}`).value;
+  const pst = document.getElementById(`devPst_${i}`).value;
+  const ver = devEditVersion[i] || 'basica';
+  guardarDispositivoAdmin(alias, obj, pst, ver, btn);
+}
+
+async function agregarDispositivo(btn) {
+  const alias = document.getElementById('newDevAlias').value;
+  const obj   = document.getElementById('newDevObj').value;
+  const pst   = document.getElementById('newDevPst').value;
+  const ok = await guardarDispositivoAdmin(alias, obj, pst, newDevVersion, btn);
+  if (ok) {
+    document.getElementById('newDevAlias').value = '';
+    document.getElementById('newDevObj').value = '';
+    document.getElementById('newDevPst').value = '';
+    setNewDevVersion('basica');
+    document.getElementById('addDeviceForm').style.display = 'none';
+  }
+}
+
+async function guardarDispositivoAdmin(alias, objetivoRaw, puestoRaw, version, btnEl) {
+  const aliasN   = (alias || '').trim().toUpperCase();
+  const objetivo = slugify(objetivoRaw || '');
+  const puesto   = slugify(puestoRaw || '');
+  if (!aliasN)   { alert('Falta el alias del dispositivo'); return false; }
+  if (!objetivo) { alert('Falta el objetivo'); return false; }
+  if (!puesto)   { alert('Falta el puesto'); return false; }
+
+  let prev;
+  if (btnEl) { prev = btnEl.textContent; btnEl.disabled = true; btnEl.textContent = 'Guardando...'; }
+  try {
+    const payload = { token: SECRET_TOKEN, action: 'guardarDispositivo', alias: aliasN, objetivo, puesto, version: version || 'basica' };
+    const resp = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    if (!data.success) { alert('Error al guardar: ' + (data.error || '')); return false; }
+    await cargarDispositivos();
+    return true;
+  } catch(e) {
+    alert('No se pudo conectar con el backend');
+    return false;
+  } finally {
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = prev; }
+  }
+}
+
 // ─── LOGIN ────────────────────────────────────────────────────
 const PASSWORD = 'Spartan2024';
 
@@ -562,6 +814,7 @@ function verificarPassword() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminContent').style.display = 'block';
     renderAll();
+    cargarDispositivos();
   } else {
     document.getElementById('loginError').style.display = 'block';
     document.getElementById('passwordInput').value = '';
