@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.sgseguridad.accesos",
+        "sha256_cert_fingerprints": ["CA:94:07:41:37:69:98:FE:F1:1E:9E:FF:21:39:A7:F1:DF:66:EC:05:34:0D:E1:51:37:87:20:21:EC:20:C0:31"]
+      }
+    }]
