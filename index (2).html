@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Spartan Accesos</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --black: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --green: #1db954;
+    --green-dark: #158a3e;
+    --text: #f0f0f0;
+    --muted: #666;
+    --s2-bg: #f0faf4;
+    --s2-surface: #ffffff;
+    --s2-border: #b8e0c8;
+    --s2-text: #0f1f16;
+    --s2-muted: #4a7a5c;
+    --s2-header-bg: #1a1a1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow-x: hidden;
+  }
+
+  .header {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--black); border-bottom: 1px solid var(--border);
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+  }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--text); cursor: pointer; user-select: none; }
+  .session-timer { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 1px; display: none; }
+  .session-timer.warning  { color: #f59e0b; }
+  .session-timer.critical { color: #e63030; animation: pulse 1s infinite; }
+
+  .screen {
+    width: 100%; max-width: 480px; padding: 80px 24px 40px;
+    display: none; flex-direction: column; gap: 20px; min-height: 100dvh;
+  }
+  .screen.active { display: flex; }
+
+  .brand-block { text-align: center; padding: 20px 0 10px; }
+  .brand-block .title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 6px; color: var(--text); line-height: 1; }
+  .brand-block .subtitle { font-size: 11px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  .field-group { display: flex; flex-direction: column; gap: 8px; }
+  .field-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  input[type="text"], input[type="number"], input[type="password"], textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  input:focus, textarea:focus { border-color: var(--green); }
+  input[type="number"] { -moz-appearance: textfield; }
+
+  .btn {
+    width: 100%; padding: 16px; border: none; border-radius: 8px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--green); color: white; }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 1px;
+  }
+
+  /* ─── SCREEN 2 LIGHT ─── */
+  #screen2 { background: var(--s2-bg); color: var(--s2-text); }
+  #screen2 .field-label { color: var(--s2-muted); }
+  #screen2 input, #screen2 textarea { background: var(--s2-surface); border-color: var(--s2-border); color: var(--s2-text); }
+  #screen2 input:focus, #screen2 textarea:focus { border-color: var(--green); }
+  #screen2 .info-bar { background: var(--s2-header-bg); border-color: #333; }
+  #screen2 .info-bar .info-bar-label { color: #888; }
+  #screen2 .info-bar .info-bar-value { color: #f0f0f0; }
+  #screen2 .photo-zone { background: var(--s2-surface); border-color: var(--s2-border); }
+  #screen2 .btn-secondary { background: #e0e0e0; color: #333; border-color: #ccc; }
+  #screen2 .tipo-btn { border-color: var(--s2-border); background: var(--s2-surface); color: var(--s2-text); }
+
+  .photo-zone {
+    background: var(--surface); border: 2px dashed var(--border); border-radius: 12px;
+    min-height: 160px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; cursor: pointer; transition: border-color 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .photo-zone:active { border-color: var(--green); }
+  .photo-zone.has-photo { border-style: solid; border-color: var(--border); }
+  .photo-zone img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; border-radius: 10px; }
+  .photo-overlay {
+    position: absolute; bottom:0; left:0; right:0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 12px; display: flex; justify-content: flex-end;
+  }
+  .retake-btn {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white;
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer;
+  }
+  .photo-icon { font-size: 30px; opacity: 0.4; }
+  .photo-hint { font-size: 12px; color: var(--muted); text-align: center; padding: 0 12px; }
+
+  .patente-field {
+    font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 6px;
+    text-align: center; text-transform: uppercase;
+  }
+  .patente-field::placeholder { font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 1px; opacity: 0.3; text-transform: none; }
+
+  .tipo-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tipo-btn {
+    padding: 18px 10px; border: 2px solid var(--border); border-radius: 10px;
+    background: var(--surface); color: var(--text);
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px;
+    cursor: pointer; transition: all 0.15s; -webkit-appearance: none;
+  }
+  .tipo-btn:active { transform: scale(0.97); }
+  .tipo-btn.selected-ingreso,
+  #screen2 .tipo-btn.selected-ingreso      { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
+  .tipo-btn.selected-egreso,
+  #screen2 .tipo-btn.selected-egreso       { background: #fde8e8; border-color: #e63030; color: #7f1d1d; }
+  .tipo-btn.selected-llave-deja,
+  #screen2 .tipo-btn.selected-llave-deja   { background: #fff8e1; border-color: #f59e0b; color: #78350f; }
+  .tipo-btn.selected-llave-retira,
+  #screen2 .tipo-btn.selected-llave-retira { background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+  .tipo-btn.selected-si,
+  #screen2 .tipo-btn.selected-si           { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
+  .tipo-btn.selected-no,
+  #screen2 .tipo-btn.selected-no           { background: #f3f4f6; border-color: #9ca3af; color: #374151; }
+
+  .campos-extendidos { display: flex; flex-direction: column; gap: 20px; animation: fadeSlideIn 0.25s ease; }
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  #campoNombresAcomp { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 0; opacity: 0; }
+  #campoNombresAcomp.visible { max-height: 120px; opacity: 1; }
+
+  textarea { resize: none; height: 80px; line-height: 1.5; }
+
+  .info-bar {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .info-bar-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+  .info-bar-value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 24px; font-size: 14px; font-weight: 500;
+    z-index: 999; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap; max-width: 90vw; text-align: center;
+  }
+  .toast.show    { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error   { border-color: #e63030; color: #e63030; }
+
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(10,10,10,0.85);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; z-index: 200; backdrop-filter: blur(4px);
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .loading-text { font-size: 13px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  @keyframes spin  { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* ─── PANEL REGISTROS ─── */
+  .registros-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+  .registros-title  { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .registros-count  { font-size: 10px; color: var(--muted); }
+  .registros-lista  {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    overflow-y: auto; max-height: 320px;
+  }
+  .registro-row {
+    display: grid; grid-template-columns: 56px 1fr auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .registro-row:last-child { border-bottom: none; }
+  .registro-hora {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 10px 4px; font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .registro-hora.ing { background: #0d2e18; color: #2a7a44; }
+  .registro-hora.egr { background: #2a0d0d; color: #9a4040; }
+  .r-hora  { font-size: 11px; }
+  .r-fecha { font-size: 9px; opacity: 0.7; margin-top: 1px; }
+  .registro-body  { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; justify-content: center; }
+  .registro-id    { font-size: 12px; font-weight: 600; color: var(--text); }
+  .registro-sub   { font-size: 11px; color: var(--muted); }
+  .registro-badge { padding: 10px 10px; display: flex; align-items: center; }
+  .badge-ing { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #1db954; background: #0d2e18; padding: 3px 8px; border-radius: 20px; border: 1px solid #1a4a26; white-space: nowrap; }
+  .badge-egr { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #e63030; background: #2a0d0d; padding: 3px 8px; border-radius: 20px; border: 1px solid #4a1a1a; white-space: nowrap; }
+  .registros-spinner { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px; color: var(--muted); font-size: 13px; }
+  .mini-spin { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  .registros-vacio { text-align: center; padding: 20px; font-size: 13px; color: var(--muted); }
+  .registros-nota  { font-size: 10px; color: #444; text-align: center; padding: 4px 0 8px; }
+
+  /* ─── BOTTOM SHEET REGISTROS ─── */
+  .sheet-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 300; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .sheet-backdrop.show { opacity: 1; pointer-events: all; }
+
+  .bottom-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: #111; border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border);
+    z-index: 400;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 80dvh;
+    display: flex; flex-direction: column;
+  }
+  .bottom-sheet.show { transform: translateY(0); }
+
+  .sheet-handle {
+    width: 36px; height: 4px; background: #444; border-radius: 2px;
+    margin: 12px auto 0; flex-shrink: 0;
+  }
+  .sheet-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px 10px; flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sheet-title { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: 1px; text-transform: uppercase; }
+  .sheet-close {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+    width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .sheet-body {
+    overflow-y: auto; flex: 1; padding: 0;
+  }
+  .sheet-nota { font-size: 10px; color: #333; text-align: center; padding: 10px; flex-shrink: 0; }
+
+  /* Botón ver registros en info-bar */
+  .btn-ver-registros {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    padding: 7px 10px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap; margin-top: 8px; display: block; width: 100%;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-ver-registros:active { background: rgba(29,185,84,0.15); transform: scale(0.97); }
+
+  /* ─── PANTALLA CONFIG DISPOSITIVO ─── */
+  .config-screen {
+    position: fixed; inset: 0; background: var(--black); z-index: 600;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 32px 24px;
+  }
+  .config-screen .cfg-brand { font-family:'Bebas Neue',sans-serif; font-size:42px; letter-spacing:6px; color: var(--green); line-height:1; }
+  .config-screen .cfg-sub { font-size:11px; letter-spacing:3px; color: var(--muted); text-transform:uppercase; margin-bottom:8px; }
+  .config-box { width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; }
+  .cfg-error { color:#e63030; font-size:13px; text-align:center; display:none; }
+  .cfg-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:-6px; }
+  .cfg-ver-row { display:flex; gap:10px; }
+  .cfg-ver-btn {
+    flex:1; padding:12px; border:1px solid var(--border); background:var(--surface);
+    color:var(--muted); border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:600;
+    font-size:13px; cursor:pointer; transition: all 0.15s;
+  }
+  .cfg-ver-btn.active { border-color:var(--green); color:var(--green); background:rgba(29,185,84,0.12); }
+</style>
+</head>
+<body>
+
+<!-- PANTALLA CONFIG DISPOSITIVO -->
+<div class="config-screen" id="configScreen">
+  <div class="cfg-brand">SPARTAN</div>
+  <div class="cfg-sub">Configuración del dispositivo</div>
+
+  <div class="config-box" id="configTokenStep">
+    <input type="password" id="configToken" placeholder="Contraseña" onkeydown="if(event.key==='Enter') verificarConfigToken()">
+    <div class="cfg-error" id="configTokenError">Contraseña incorrecta</div>
+    <button class="btn btn-primary" onclick="verificarConfigToken()">CONTINUAR</button>
+  </div>
+
+  <div class="config-box" id="configFormStep" style="display:none;">
+    <div class="cfg-label">Alias del dispositivo</div>
+    <input type="text" id="configAlias" placeholder="Ej: TABLET-01">
+    <div class="cfg-label">Objetivo</div>
+    <input type="text" id="configObjetivo" placeholder="Ej: Banco Provincia">
+    <div class="cfg-label">Puesto</div>
+    <input type="text" id="configPuesto" placeholder="Ej: 1">
+    <div class="cfg-label">Versión del formulario</div>
+    <div class="cfg-ver-row">
+      <button type="button" class="cfg-ver-btn active" id="cfgVerBasica"   onclick="setConfigVersion('basica')">Básico</button>
+      <button type="button" class="cfg-ver-btn"        id="cfgVerExtended" onclick="setConfigVersion('extended')">Extendido</button>
+    </div>
+    <button class="btn btn-primary" onclick="guardarConfigDispositivo()" style="margin-top:8px;">GUARDAR Y ACTIVAR</button>
+  </div>
+</div>
+
+<div class="header">
+  <div class="logo">SPARTAN</div>
+  <div class="session-timer" id="sessionTimer">SESIÓN: 10:00</div>
+</div>
+
+<!-- SCREEN 1 -->
+<div class="screen active" id="screen1">
+  <div class="brand-block">
+    <div class="title">ACCESOS</div>
+    <div class="subtitle">Control de vehículos</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="field-group">
+    <div class="field-label">CUIL del vigilador</div>
+    <input type="number" id="cuilInput" placeholder="20-12345678-9" inputmode="numeric">
+  </div>
+
+  <div style="background:#1a1a1a; border-radius:8px; padding:12px 16px; border:1px solid #2a2a2a;">
+    <div style="font-size:10px; letter-spacing:2px; color:#666; text-transform:uppercase; margin-bottom:4px;">Objetivo / Puesto</div>
+    <div id="puestoInfoLabel" style="font-size:15px; font-weight:600; color:#f0f0f0;">—</div>
+  </div>
+
+  <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+
+  <div class="divider"></div>
+
+  <div id="registrosPanel" style="display:flex; flex-direction:column; gap:8px;">
+    <div class="registros-header">
+      <div class="registros-title">Últimas 24 hs</div>
+      <div class="registros-count" id="registrosCount"></div>
+    </div>
+    <div class="registros-lista" id="registrosLista">
+      <div class="registros-spinner"><div class="mini-spin"></div>Cargando registros...</div>
+    </div>
+    <div class="registros-nota">Solo lectura · No se pueden modificar</div>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div class="screen" id="screen2">
+
+  <div class="info-bar">
+    <div>
+      <div class="info-bar-label">Vigilador</div>
+      <div class="info-bar-value" id="cuilDisplay">—</div>
+      <div class="info-bar-label" style="margin-top:4px">Objetivo / Puesto</div>
+      <div class="info-bar-value" id="puestoDisplay">—</div>
+      <button class="btn-ver-registros" onclick="abrirSheetRegistros()">📋 Ver registros 24 hs</button>
+    </div>
+    <div style="text-align:right">
+      <div class="info-bar-label">Fecha / Hora</div>
+      <div class="info-bar-value" id="fechaDisplay">—</div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">¿Qué registrás?</div>
+    <div class="tipo-selector">
+      <button type="button" class="tipo-btn" id="btnVehiculo" onclick="seleccionarSujeto('VEHICULO')">🚗 VEHÍCULO</button>
+      <button type="button" class="tipo-btn" id="btnPersona"  onclick="seleccionarSujeto('PERSONA')">🚶 PERSONA</button>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">Movimiento</div>
+    <div class="tipo-selector">
+      <button type="button" class="tipo-btn" id="btnIngreso" onclick="seleccionarTipo('INGRESO')">🟢 INGRESO</button>
+      <button type="button" class="tipo-btn" id="btnEgreso"  onclick="seleccionarTipo('EGRESO')">🔴 EGRESO</button>
+    </div>
+  </div>
+
+  <!-- Campos VEHÍCULO -->
+  <div id="camposVehiculo" style="display:none; flex-direction:column; gap:20px;">
+
+    <div class="field-group">
+      <div class="field-label">📷 Foto de la patente</div>
+      <div class="photo-zone" id="photoZonePatente" onclick="abrirCamara('patente')">
+        <div class="photo-icon">📷</div>
+        <div class="photo-hint">Tocá para sacar foto de la patente</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">📷 Foto del baúl</div>
+      <div class="photo-zone" id="photoZoneBaul" onclick="abrirCamara('baul')">
+        <div class="photo-icon">🚗</div>
+        <div class="photo-hint">Tocá para sacar foto del baúl</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Patente</div>
+      <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB123CD" maxlength="10" style="text-transform:uppercase;">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Conductor</div>
+      <input type="text" id="conductorInput" placeholder="Apellido y nombre">
+    </div>
+  </div>
+
+  <!-- Campos PERSONA -->
+  <div id="camposPersona" style="display:none; flex-direction:column; gap:20px;">
+    <div class="field-group">
+      <div class="field-label">Nombre de la persona</div>
+      <input type="text" id="personaInput" placeholder="Apellido y nombre">
+    </div>
+  </div>
+
+  <!-- CAMPOS EXTENDIDOS -->
+  <div id="camposExtendidos" class="campos-extendidos" style="display:none;">
+
+    <div id="campoLlave" style="display:none;" class="field-group">
+      <div class="field-label">🔑 Llave</div>
+      <div class="tipo-selector">
+        <button type="button" class="tipo-btn" id="btnDejaLlave"   onclick="seleccionarLlave('DEJA')">🔑 DEJA LLAVE</button>
+        <button type="button" class="tipo-btn" id="btnRetiraLlave" onclick="seleccionarLlave('RETIRA')">🔑 RETIRA LLAVE</button>
+      </div>
+    </div>
+
+    <div id="campoAcomp" style="display:none;" class="field-group">
+      <div class="field-label">Acompañante</div>
+      <div class="tipo-selector">
+        <button type="button" class="tipo-btn" id="btnAcompSi" onclick="seleccionarAcompañante('SI')">✅ SÍ</button>
+        <button type="button" class="tipo-btn" id="btnAcompNo" onclick="seleccionarAcompañante('NO')">❌ NO</button>
+      </div>
+    </div>
+
+    <div id="campoNombresAcomp" class="field-group">
+      <div class="field-label">Nombres de los acompañantes</div>
+      <textarea id="nombresAcompInput" placeholder="Ej: García Juan, Pérez Ana"></textarea>
+    </div>
+
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">Observaciones</div>
+    <textarea id="obsInput" placeholder="Opcional"></textarea>
+  </div>
+
+  <button class="btn btn-primary" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
+  <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
+
+</div>
+
+<!-- CÁMARA MODAL -->
+<div id="camaraModal" style="display:none; position:fixed; inset:0; background:#000; z-index:500; flex-direction:column; height:100dvh;">
+  <div style="position:relative; flex:1; min-height:0; background:#000;">
+    <video id="videoStream" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+    <div id="camaraLabel" style="position:absolute; top:16px; left:0; right:0; text-align:center; pointer-events:none;">
+      <span style="background:rgba(0,0,0,0.6); color:#fff; font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; padding:6px 18px; border-radius:20px;"></span>
+    </div>
+    <button id="flashBtn" onclick="toggleFlash()" style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.3); color:white; width:48px; height:48px; border-radius:50%; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🔦</button>
+  </div>
+  <canvas id="fotoCanvas" style="display:none;"></canvas>
+  <div style="padding:16px; display:flex; gap:12px; background:#0a0a0a; flex-shrink:0;">
+    <button onclick="cancelarCamara()" style="flex:1; padding:16px; background:#1e1e1e; color:#ccc; border:1px solid #333; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:15px; cursor:pointer;">Cancelar</button>
+    <button onclick="tomarFoto()" style="flex:2; padding:16px; background:#1db954; color:white; border:none; border-radius:8px; font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; cursor:pointer;">📷 SACAR FOTO</button>
+  </div>
+</div>
+
+<!-- BOTTOM SHEET REGISTROS -->
+<div class="sheet-backdrop" id="sheetBackdrop" onclick="cerrarSheetRegistros()"></div>
+<div class="bottom-sheet" id="bottomSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-title">📋 Registros últimas 24 hs</div>
+    <button class="sheet-close" onclick="cerrarSheetRegistros()">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="registros-lista" id="registrosListaSheet" style="max-height:none; border:none; border-radius:0; background:transparent;"></div>
+  </div>
+  <div class="sheet-nota">Solo lectura · No se pueden modificar</div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Procesando...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const CONFIG = {
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwcOb2NZX4FNQYTS_6koxlWXQT2fAX0M3bl8HAEArxVVJNVM02-4XBzKpoVMJD82mdC6Q/exec',
+  SESSION_MINUTES: 10,
+  SECRET_TOKEN: 'spt_7x9mK2pQvR4nWj8dLz3',
+  ADMIN_PASSWORD: 'Spartan2024',
+};
+
+let state = {
+  cuil: null, objetivo: null, puesto: null, version: 'basica',
+  alias: null, configVersionSel: 'basica', configPendiente: null,
+  tipo: null, sujeto: null, llave: null, acompañante: null,
+  sessionTimer: null, sessionSeconds: CONFIG.SESSION_MINUTES * 60,
+  photoBlobPatente: null, photoBlobBaul: null,
+  camaraTarget: null, flashActivo: false, streamActivo: null,
+};
+
+// ─── INIT ────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  configurarLongPressLogo();
+  init();
+});
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const pObj = params.get('objetivo');
+  const pPst = params.get('puesto');
+
+  // 1) Parámetros en la URL → mandan (testeo desde navegador / links viejos)
+  if (pObj && pPst) {
+    state.objetivo = pObj.toUpperCase();
+    state.puesto   = pPst.toUpperCase();
+    state.version  = (params.get('version') || 'basica').toLowerCase();
+    aplicarConfigYArrancar();
+    return;
+  }
+
+  // 2) Config guardada en el dispositivo (modo alias)
+  const saved = cargarConfigLocal();
+  if (saved && saved.alias) {
+    state.alias    = saved.alias;
+    state.objetivo = saved.objetivo;
+    state.puesto   = saved.puesto;
+    state.version  = saved.version || 'basica';
+    aplicarConfigYArrancar();                  // arranca ya con lo guardado (anda offline)
+    refrescarConfigDesdeBackend(saved.alias);  // confirma contra el backend en segundo plano
+    return;
+  }
+
+  // 3) Sin config → pantalla de configuración
+  mostrarConfigScreen();
+}
+
+function aplicarConfigYArrancar() {
+  let label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
+  if (state.version === 'extended') label += ' · EXTENDIDO';
+  document.getElementById('puestoInfoLabel').textContent = label;
+  document.getElementById('configScreen').style.display = 'none';
+  cargarRegistros();
+}
+
+// ─── CONFIG DEL DISPOSITIVO ───────────────────────────────────────
+function cargarConfigLocal() {
+  try { return JSON.parse(localStorage.getItem('spartan_device') || 'null'); }
+  catch { return null; }
+}
+function guardarConfigLocal(cfg) {
+  try { localStorage.setItem('spartan_device', JSON.stringify(cfg)); } catch(e) {}
+}
+
+function slugify(str) {
+  return str.trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
+function mostrarConfigScreen() {
+  document.getElementById('configTokenStep').style.display = 'flex';
+  document.getElementById('configFormStep').style.display = 'none';
+  document.getElementById('configToken').value = '';
+  document.getElementById('configTokenError').style.display = 'none';
+  setConfigVersion('basica');
+  document.getElementById('configScreen').style.display = 'flex';
+}
+
+function verificarConfigToken() {
+  const val = document.getElementById('configToken').value;
+  if (val === CONFIG.ADMIN_PASSWORD) {
+    document.getElementById('configTokenStep').style.display = 'none';
+    document.getElementById('configFormStep').style.display = 'flex';
+    const saved = cargarConfigLocal();
+    if (saved) {
+      document.getElementById('configAlias').value    = saved.alias    || '';
+      document.getElementById('configObjetivo').value = saved.objetivo || '';
+      document.getElementById('configPuesto').value   = saved.puesto   || '';
+      setConfigVersion(saved.version === 'extended' ? 'extended' : 'basica');
+    }
+  } else {
+    document.getElementById('configTokenError').style.display = 'block';
+    document.getElementById('configToken').value = '';
+  }
+}
+
+function setConfigVersion(v) {
+  state.configVersionSel = v;
+  document.getElementById('cfgVerBasica').className   = 'cfg-ver-btn' + (v === 'basica'   ? ' active' : '');
+  document.getElementById('cfgVerExtended').className = 'cfg-ver-btn' + (v === 'extended' ? ' active' : '');
+}
+
+async function guardarConfigDispositivo() {
+  const alias       = document.getElementById('configAlias').value.trim().toUpperCase();
+  const objetivoRaw = document.getElementById('configObjetivo').value.trim();
+  const puestoRaw   = document.getElementById('configPuesto').value.trim();
+  if (!alias)       { showToast('Ingresá un alias para el dispositivo', 'error'); return; }
+  if (!objetivoRaw) { showToast('Ingresá el objetivo', 'error'); return; }
+  if (!puestoRaw)   { showToast('Ingresá el puesto', 'error'); return; }
+
+  const objetivo = slugify(objetivoRaw);
+  const puesto   = slugify(puestoRaw);
+  const version  = state.configVersionSel || 'basica';
+
+  showLoading('Guardando configuración...');
+  try {
+    const payload = { token: CONFIG.SECRET_TOKEN, action: 'guardarDispositivo', alias, objetivo, puesto, version };
+    const resp = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    hideLoading();
+    if (!data.success) { showToast('Error al guardar: ' + (data.error || ''), 'error'); return; }
+
+    const c = data.config || { objetivo, puesto, version };
+    state.alias    = alias;
+    state.objetivo = c.objetivo;
+    state.puesto   = c.puesto;
+    state.version  = c.version || 'basica';
+    guardarConfigLocal({ alias, objetivo: state.objetivo, puesto: state.puesto, version: state.version });
+    showToast('✅ Dispositivo configurado', 'success');
+    aplicarConfigYArrancar();
+  } catch(e) {
+    hideLoading();
+    showToast('Sin conexión — no se pudo guardar', 'error');
+  }
+}
+
+async function refrescarConfigDesdeBackend(alias) {
+  try {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=config&alias=${encodeURIComponent(alias)}&token=${CONFIG.SECRET_TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!data.success || !data.config) return;   // alias borrado o sin datos → mantengo lo guardado
+    const c   = data.config;
+    const ver = c.version || 'basica';
+    const cambio = c.objetivo !== state.objetivo || c.puesto !== state.puesto || ver !== state.version;
+    guardarConfigLocal({ alias, objetivo: c.objetivo, puesto: c.puesto, version: ver });
+    if (!cambio) return;
+    if (state.cuil) {
+      // sesión activa → diferir, no cambiar el objetivo en medio de una carga
+      state.configPendiente = { alias, objetivo: c.objetivo, puesto: c.puesto, version: ver };
+    } else {
+      state.objetivo = c.objetivo; state.puesto = c.puesto; state.version = ver;
+      aplicarConfigYArrancar();
+    }
+  } catch(e) { /* offline → sigo con lo guardado */ }
+}
+
+function configurarLongPressLogo() {
+  const logoEl = document.querySelector('.header .logo');
+  if (!logoEl) return;
+  let timer = null;
+  const start  = () => { timer = setTimeout(mostrarConfigScreen, 1200); };
+  const cancel = () => { clearTimeout(timer); };
+  logoEl.addEventListener('touchstart', start, { passive: true });
+  logoEl.addEventListener('touchend', cancel);
+  logoEl.addEventListener('touchmove', cancel, { passive: true });
+  logoEl.addEventListener('mousedown', start);
+  logoEl.addEventListener('mouseup', cancel);
+  logoEl.addEventListener('mouseleave', cancel);
+}
+
+// ─── REGISTROS ───────────────────────────────────────────────────
+async function cargarRegistros() {
+  const lista = document.getElementById('registrosLista');
+  try {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=registros&objetivo=${encodeURIComponent(state.objetivo)}&puesto=${encodeURIComponent(state.puesto)}&token=${CONFIG.SECRET_TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (!data.success || !data.registros || data.registros.length === 0) {
+      lista.innerHTML = `<div class="registros-vacio">Sin registros en las últimas 24 hs</div>`;
+      document.getElementById('registrosCount').textContent = '';
+      return;
+    }
+
+    const regs = data.registros;
+    document.getElementById('registrosCount').textContent = `${regs.length} registro${regs.length !== 1 ? 's' : ''}`;
+
+    lista.innerHTML = regs.map(r => {
+      const esIng     = r.tipo === 'INGRESO';
+      const esVeh     = r.patente && r.patente !== 'CAMINANDO';
+      const icono     = esVeh ? '🚗' : '🚶';
+      const idLinea   = esVeh ? `${icono} ${r.patente}` : `${icono} ${r.conductor}`;
+      let   subLinea  = esVeh ? r.conductor : 'Persona';
+      if (r.llave) subLinea += ` · 🔑 ${r.llave === 'DEJA' ? 'Deja llave' : 'Retira llave'}`;
+      const fechaCorta = r.fecha ? r.fecha.slice(0,5) : '';
+
+      return `<div class="registro-row">
+        <div class="registro-hora ${esIng ? 'ing' : 'egr'}">
+          <span class="r-hora">${r.hora}</span>
+          <span class="r-fecha">${fechaCorta}</span>
+        </div>
+        <div class="registro-body">
+          <div class="registro-id">${idLinea}</div>
+          <div class="registro-sub">${subLinea}</div>
+        </div>
+        <div class="registro-badge">
+          <span class="${esIng ? 'badge-ing' : 'badge-egr'}">${r.tipo}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    lista.innerHTML = `<div class="registros-vacio">No se pudieron cargar los registros</div>`;
+  }
+}
+
+// ─── SESIÓN ──────────────────────────────────────────────────────
+function iniciarSesion() {
+  const cuil = document.getElementById('cuilInput').value.trim();
+  if (!cuil) { showToast('Ingresá tu CUIL', 'error'); return; }
+  state.cuil = cuil;
+  document.getElementById('cuilDisplay').textContent = cuil;
+  document.getElementById('puestoDisplay').textContent = `Obj. ${state.objetivo} — Puesto ${state.puesto}`;
+  actualizarFecha();
+  showScreen('screen2');
+  document.getElementById('sessionTimer').style.display = 'block';
+  iniciarTimer();
+  document.getElementById('camposExtendidos').style.display = (state.version === 'extended') ? 'flex' : 'none';
+}
+
+function iniciarTimer() {
+  state.sessionSeconds = CONFIG.SESSION_MINUTES * 60;
+  clearInterval(state.sessionTimer);
+  state.sessionTimer = setInterval(() => {
+    state.sessionSeconds--;
+    actualizarTimerDisplay();
+    if (state.sessionSeconds <= 0) cerrarSesion();
+  }, 1000);
+}
+
+function resetTimer() { state.sessionSeconds = CONFIG.SESSION_MINUTES * 60; }
+
+function actualizarTimerDisplay() {
+  const m = Math.floor(state.sessionSeconds / 60);
+  const s = state.sessionSeconds % 60;
+  const el = document.getElementById('sessionTimer');
+  el.textContent = `SESIÓN: ${m}:${s.toString().padStart(2,'0')}`;
+  el.className = 'session-timer';
+  if (state.sessionSeconds <= 60) el.classList.add('critical');
+  else if (state.sessionSeconds <= 180) el.classList.add('warning');
+}
+
+function cerrarSesion() {
+  clearInterval(state.sessionTimer);
+  state.cuil = null;
+  document.getElementById('sessionTimer').style.display = 'none';
+  limpiarFormulario();
+  document.getElementById('cuilInput').value = '';
+  showScreen('screen1');
+
+  // aplicar reasignación diferida (si llegó durante la sesión)
+  if (state.configPendiente) {
+    const c = state.configPendiente;
+    state.objetivo = c.objetivo; state.puesto = c.puesto; state.version = c.version || 'basica';
+    state.configPendiente = null;
+    guardarConfigLocal({ alias: c.alias, objetivo: state.objetivo, puesto: state.puesto, version: state.version });
+    let label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
+    if (state.version === 'extended') label += ' · EXTENDIDO';
+    document.getElementById('puestoInfoLabel').textContent = label;
+  }
+
+  cargarRegistros();
+
+  // confirmar contra el backend para próximas reasignaciones (modo alias)
+  if (state.alias) refrescarConfigDesdeBackend(state.alias);
+}
+
+document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
+document.addEventListener('click',      () => { if (state.cuil) resetTimer(); });
+
+// ─── SELECTORES ──────────────────────────────────────────────────
+function seleccionarSujeto(sujeto) {
+  state.sujeto = sujeto;
+  document.getElementById('btnVehiculo').className = 'tipo-btn' + (sujeto === 'VEHICULO' ? ' selected-ingreso' : '');
+  document.getElementById('btnPersona').className  = 'tipo-btn' + (sujeto === 'PERSONA'  ? ' selected-ingreso' : '');
+
+  const v = document.getElementById('camposVehiculo');
+  const p = document.getElementById('camposPersona');
+  const cl = document.getElementById('campoLlave');
+  const ca = document.getElementById('campoAcomp');
+
+  if (sujeto === 'VEHICULO') {
+    v.style.display = 'flex'; p.style.display = 'none';
+    if (state.version === 'extended') {
+      if (cl) cl.style.display = 'flex';
+      if (ca) ca.style.display = 'flex';
+    }
+  } else {
+    v.style.display = 'none'; p.style.display = 'flex';
+    if (cl) cl.style.display = 'none';
+    if (ca) ca.style.display = 'none';
+    state.llave = null; state.acompañante = null;
+    document.getElementById('btnDejaLlave').className   = 'tipo-btn';
+    document.getElementById('btnRetiraLlave').className = 'tipo-btn';
+    document.getElementById('btnAcompSi').className     = 'tipo-btn';
+    document.getElementById('btnAcompNo').className     = 'tipo-btn';
+    document.getElementById('campoNombresAcomp').classList.remove('visible');
+    document.getElementById('nombresAcompInput').value  = '';
+  }
+}
+
+function seleccionarTipo(tipo) {
+  state.tipo = tipo;
+  document.getElementById('btnIngreso').className = 'tipo-btn' + (tipo === 'INGRESO' ? ' selected-ingreso' : '');
+  document.getElementById('btnEgreso').className  = 'tipo-btn' + (tipo === 'EGRESO'  ? ' selected-egreso'  : '');
+}
+
+function seleccionarLlave(opcion) {
+  state.llave = opcion;
+  document.getElementById('btnDejaLlave').className   = 'tipo-btn' + (opcion === 'DEJA'   ? ' selected-llave-deja'   : '');
+  document.getElementById('btnRetiraLlave').className = 'tipo-btn' + (opcion === 'RETIRA' ? ' selected-llave-retira' : '');
+}
+
+function seleccionarAcompañante(opcion) {
+  state.acompañante = opcion;
+  document.getElementById('btnAcompSi').className = 'tipo-btn' + (opcion === 'SI' ? ' selected-si' : '');
+  document.getElementById('btnAcompNo').className = 'tipo-btn' + (opcion === 'NO' ? ' selected-no' : '');
+  const campo = document.getElementById('campoNombresAcomp');
+  if (opcion === 'SI') {
+    campo.classList.add('visible');
+  } else {
+    campo.classList.remove('visible');
+    document.getElementById('nombresAcompInput').value = '';
+  }
+}
+
+// ─── CÁMARA ──────────────────────────────────────────────────────
+async function abrirCamara(target) {
+  state.camaraTarget = target;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    state.streamActivo = stream;
+    document.getElementById('videoStream').srcObject = stream;
+
+    // Label contextual
+    const labelEl = document.getElementById('camaraLabel').querySelector('span');
+    labelEl.textContent = target === 'patente' ? '📷 FOTO PATENTE' : '🚗 FOTO BAÚL';
+
+    // Flash automático nocturno
+    const hora = new Date().getHours();
+    const esNoche = hora >= 19 || hora < 7;
+    await activarFlash(esNoche);
+
+    const modal = document.getElementById('camaraModal');
+    modal.style.display = 'flex';
+    modal.style.flexDirection = 'column';
+    document.body.style.overflow = 'hidden';
+  } catch(err) {
+    showToast('No se pudo acceder a la cámara — verificá los permisos', 'error');
+  }
+}
+
+async function activarFlash(encendido) {
+  state.flashActivo = encendido;
+  actualizarBotonFlash();
+  if (!state.streamActivo) return;
+  try {
+    const track = state.streamActivo.getVideoTracks()[0];
+    if (track && track.getCapabilities && track.getCapabilities().torch) {
+      await track.applyConstraints({ advanced: [{ torch: encendido }] });
+    }
+  } catch(e) {}
+}
+
+async function toggleFlash() { await activarFlash(!state.flashActivo); }
+
+function actualizarBotonFlash() {
+  const btn = document.getElementById('flashBtn');
+  btn.style.background   = state.flashActivo ? 'rgba(255,220,0,0.35)' : 'rgba(0,0,0,0.5)';
+  btn.style.borderColor  = state.flashActivo ? 'rgba(255,220,0,0.8)'  : 'rgba(255,255,255,0.3)';
+}
+
+function tomarFoto() {
+  const video = document.getElementById('videoStream');
+  const canvas = document.getElementById('fotoCanvas');
+  const MAX = 800;
+  const ratio = Math.min(MAX / video.videoWidth, MAX / video.videoHeight, 1);
+  canvas.width  = Math.round(video.videoWidth  * ratio);
+  canvas.height = Math.round(video.videoHeight * ratio);
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob((blob) => {
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    const target  = state.camaraTarget;
+    cerrarStreamCamara();
+    if (target === 'patente') {
+      state.photoBlobPatente = blob;
+      mostrarFotoPreview('photoZonePatente', dataUrl, 'patente');
+    } else {
+      state.photoBlobBaul = blob;
+      mostrarFotoPreview('photoZoneBaul', dataUrl, 'baul');
+    }
+  }, 'image/jpeg', 0.7);
+}
+
+function cancelarCamara() { cerrarStreamCamara(); }
+
+function cerrarStreamCamara() {
+  if (state.streamActivo) {
+    try {
+      const track = state.streamActivo.getVideoTracks()[0];
+      if (track && track.getCapabilities && track.getCapabilities().torch) {
+        track.applyConstraints({ advanced: [{ torch: false }] });
+      }
+    } catch(e) {}
+    state.streamActivo.getTracks().forEach(t => t.stop());
+    state.streamActivo = null;
+  }
+  state.flashActivo = false;
+  actualizarBotonFlash();
+  document.getElementById('camaraModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function mostrarFotoPreview(zoneId, dataUrl, target) {
+  const zone = document.getElementById(zoneId);
+  zone.innerHTML = `
+    <img src="${dataUrl}" alt="Foto ${target}">
+    <div class="photo-overlay">
+      <button class="retake-btn" onclick="abrirCamara('${target}'); event.stopPropagation();">📷 Retomar</button>
+    </div>`;
+  zone.classList.add('has-photo');
+  zone.onclick = null;
+}
+
+// ─── ENVÍO ───────────────────────────────────────────────────────
+async function enviarRegistro() {
+  const obs = document.getElementById('obsInput').value.trim();
+
+  if (!state.sujeto) { showToast('Seleccioná Vehículo o Persona', 'error'); return; }
+  if (!state.tipo)   { showToast('Seleccioná INGRESO o EGRESO',    'error'); return; }
+
+  if (state.version === 'extended') {
+    if (state.sujeto === 'VEHICULO' && !state.llave) {
+      showToast('Indicá si deja o retira llave', 'error'); return;
+    }
+    if (state.sujeto === 'VEHICULO' && !state.acompañante) {
+      showToast('Indicá si hay acompañante', 'error'); return;
+    }
+    if (state.sujeto === 'VEHICULO' && state.acompañante === 'SI') {
+      if (!document.getElementById('nombresAcompInput').value.trim()) {
+        showToast('Ingresá los nombres de los acompañantes', 'error'); return;
+      }
+    }
+  }
+
+  let patente = '', conductor = '';
+
+  if (state.sujeto === 'VEHICULO') {
+    patente   = document.getElementById('patenteInput').value.trim().toUpperCase();
+    conductor = document.getElementById('conductorInput').value.trim();
+    if (!state.photoBlobPatente) { showToast('Sacá la foto de la patente', 'error'); return; }
+    if (!state.photoBlobBaul)    { showToast('Sacá la foto del baúl',       'error'); return; }
+    if (!patente)                { showToast('Ingresá la patente',           'error'); return; }
+    if (!conductor)              { showToast('Ingresá el nombre del conductor', 'error'); return; }
+  } else {
+    const persona = document.getElementById('personaInput').value.trim();
+    if (!persona) { showToast('Ingresá el nombre de la persona', 'error'); return; }
+    patente = 'CAMINANDO'; conductor = persona;
+  }
+
+  const ahora = new Date();
+  const fecha = formatFecha(ahora);
+  const hora  = formatHora(ahora);
+
+  showLoading('Preparando registro...');
+
+  try {
+    let latitud = '', longitud = '';
+    try {
+      const pos = await getLocation();
+      latitud  = pos.coords.latitude.toFixed(6);
+      longitud = pos.coords.longitude.toFixed(6);
+    } catch(e) {}
+
+    let fotoBase64Patente = '', fotoBase64Baul = '';
+    let nombreFotoPatente = '', nombreFotoBaul = '';
+
+    if (state.sujeto === 'VEHICULO') {
+      const fechaStr = fecha.replace(/\//g, '-');
+      const horaStr  = hora.replace(':', '');
+      fotoBase64Patente = await blobToBase64(state.photoBlobPatente);
+      nombreFotoPatente = `${fechaStr}_${horaStr}_${patente}_patente.jpg`;
+      fotoBase64Baul    = await blobToBase64(state.photoBlobBaul);
+      nombreFotoBaul    = `${fechaStr}_${horaStr}_${patente}_baul.jpg`;
+    }
+
+    const llave               = state.version === 'extended' ? (state.llave || '') : '';
+    const acompañante         = state.version === 'extended' ? (state.acompañante || '') : '';
+    const nombresAcompañantes = (state.version === 'extended' && state.acompañante === 'SI')
+                                ? document.getElementById('nombresAcompInput').value.trim() : '';
+
+    const payload = {
+      token: CONFIG.SECRET_TOKEN,
+      cuil: state.cuil, fecha, hora,
+      objetivo: state.objetivo || '', puesto: state.puesto || '', version: state.version,
+      tipo: state.tipo, patente, conductor, observaciones: obs,
+      latitud, longitud,
+      fotoBase64Patente, nombreFotoPatente,
+      fotoBase64Baul,    nombreFotoBaul,
+      llave, acompañante, nombresAcompañantes,
+    };
+
+    hideLoading();
+    showToast('✅ Registro guardado', 'success');
+    limpiarFormulario();
+    resetTimer();
+    enviarEnBackground(payload);
+
+  } catch(err) {
+    hideLoading();
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+async function enviarEnBackground(payload) {
+  const MAX = 3;
+  for (let i = 0; i < MAX; i++) {
+    try {
+      const resp   = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const result = await resp.json();
+      if (result.success) return;
+    } catch(e) {
+      if (i < MAX - 1) await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  showToast('⚠️ No se pudo sincronizar — verificá la conexión', 'error');
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────
+function limpiarFormulario() {
+  const resetZone = (id, target, icono, hint) => {
+    const z = document.getElementById(id);
+    z.innerHTML = `<div class="photo-icon">${icono}</div><div class="photo-hint">${hint}</div>`;
+    z.classList.remove('has-photo');
+    z.onclick = () => abrirCamara(target);
+  };
+  resetZone('photoZonePatente', 'patente', '📷', 'Tocá para sacar foto de la patente');
+  resetZone('photoZoneBaul',    'baul',    '🚗', 'Tocá para sacar foto del baúl');
+
+  document.getElementById('patenteInput').value   = '';
+  document.getElementById('conductorInput').value = '';
+  document.getElementById('personaInput').value   = '';
+  document.getElementById('obsInput').value       = '';
+
+  document.getElementById('btnIngreso').className  = 'tipo-btn';
+  document.getElementById('btnEgreso').className   = 'tipo-btn';
+  document.getElementById('btnVehiculo').className = 'tipo-btn';
+  document.getElementById('btnPersona').className  = 'tipo-btn';
+
+  document.getElementById('camposVehiculo').style.display = 'none';
+  document.getElementById('camposPersona').style.display  = 'none';
+
+  state.photoBlobPatente = null; state.photoBlobBaul = null;
+  state.tipo = null; state.sujeto = null;
+  state.llave = null; state.acompañante = null;
+
+  document.getElementById('btnDejaLlave').className   = 'tipo-btn';
+  document.getElementById('btnRetiraLlave').className = 'tipo-btn';
+  document.getElementById('btnAcompSi').className     = 'tipo-btn';
+  document.getElementById('btnAcompNo').className     = 'tipo-btn';
+  document.getElementById('campoLlave').style.display = 'none';
+  document.getElementById('campoAcomp').style.display = 'none';
+  document.getElementById('campoNombresAcomp').classList.remove('visible');
+  document.getElementById('nombresAcompInput').value  = '';
+}
+
+function abrirSheetRegistros() {
+  // Reutilizar el HTML ya generado en la lista de screen1
+  const src = document.getElementById('registrosLista').innerHTML;
+  document.getElementById('registrosListaSheet').innerHTML = src;
+  document.getElementById('sheetBackdrop').classList.add('show');
+  document.getElementById('bottomSheet').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarSheetRegistros() {
+  document.getElementById('sheetBackdrop').classList.remove('show');
+  document.getElementById('bottomSheet').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function actualizarFecha() {
+  const ahora = new Date();
+  document.getElementById('fechaDisplay').textContent = `${formatFecha(ahora)} ${formatHora(ahora)}`;
+}
+
+function formatFecha(d) {
+  return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+}
+function formatHora(d) {
+  return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+}
+function getLocation() {
+  return new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 }));
+}
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+let toastTimeout;
+function showToast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 3500);
+}
+function showLoading(text = 'Procesando...') {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+setInterval(() => { if (state.cuil) actualizarFecha(); }, 60000);
+</script>
+</body>
+</html>
