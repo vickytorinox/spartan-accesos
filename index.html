@@ -46,7 +46,7 @@
     padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
     z-index: 100;
   }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--text); }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--text); cursor: pointer; user-select: none; }
   .session-timer { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 1px; display: none; }
   .session-timer.warning  { color: #f59e0b; }
   .session-timer.critical { color: #e63030; animation: pulse 1s infinite; }
@@ -66,7 +66,7 @@
   .field-group { display: flex; flex-direction: column; gap: 8px; }
   .field-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 
-  input[type="text"], input[type="number"], textarea {
+  input[type="text"], input[type="number"], input[type="password"], textarea {
     width: 100%; background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 14px 16px; color: var(--text);
     font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none;
@@ -270,9 +270,55 @@
     font-family: 'DM Sans', sans-serif;
   }
   .btn-ver-registros:active { background: rgba(29,185,84,0.15); transform: scale(0.97); }
+
+  /* ─── PANTALLA CONFIG DISPOSITIVO ─── */
+  .config-screen {
+    position: fixed; inset: 0; background: var(--black); z-index: 600;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; padding: 32px 24px;
+  }
+  .config-screen .cfg-brand { font-family:'Bebas Neue',sans-serif; font-size:42px; letter-spacing:6px; color: var(--green); line-height:1; }
+  .config-screen .cfg-sub { font-size:11px; letter-spacing:3px; color: var(--muted); text-transform:uppercase; margin-bottom:8px; }
+  .config-box { width:100%; max-width:340px; display:flex; flex-direction:column; gap:12px; }
+  .cfg-error { color:#e63030; font-size:13px; text-align:center; display:none; }
+  .cfg-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); font-weight:600; margin-bottom:-6px; }
+  .cfg-ver-row { display:flex; gap:10px; }
+  .cfg-ver-btn {
+    flex:1; padding:12px; border:1px solid var(--border); background:var(--surface);
+    color:var(--muted); border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:600;
+    font-size:13px; cursor:pointer; transition: all 0.15s;
+  }
+  .cfg-ver-btn.active { border-color:var(--green); color:var(--green); background:rgba(29,185,84,0.12); }
 </style>
 </head>
 <body>
+
+<!-- PANTALLA CONFIG DISPOSITIVO -->
+<div class="config-screen" id="configScreen">
+  <div class="cfg-brand">SPARTAN</div>
+  <div class="cfg-sub">Configuración del dispositivo</div>
+
+  <div class="config-box" id="configTokenStep">
+    <input type="password" id="configToken" placeholder="Contraseña" onkeydown="if(event.key==='Enter') verificarConfigToken()">
+    <div class="cfg-error" id="configTokenError">Contraseña incorrecta</div>
+    <button class="btn btn-primary" onclick="verificarConfigToken()">CONTINUAR</button>
+  </div>
+
+  <div class="config-box" id="configFormStep" style="display:none;">
+    <div class="cfg-label">Alias del dispositivo</div>
+    <input type="text" id="configAlias" placeholder="Ej: TABLET-01">
+    <div class="cfg-label">Objetivo</div>
+    <input type="text" id="configObjetivo" placeholder="Ej: Banco Provincia">
+    <div class="cfg-label">Puesto</div>
+    <input type="text" id="configPuesto" placeholder="Ej: 1">
+    <div class="cfg-label">Versión del formulario</div>
+    <div class="cfg-ver-row">
+      <button type="button" class="cfg-ver-btn active" id="cfgVerBasica"   onclick="setConfigVersion('basica')">Básico</button>
+      <button type="button" class="cfg-ver-btn"        id="cfgVerExtended" onclick="setConfigVersion('extended')">Extendido</button>
+    </div>
+    <button class="btn btn-primary" onclick="guardarConfigDispositivo()" style="margin-top:8px;">GUARDAR Y ACTIVAR</button>
+  </div>
+</div>
 
 <div class="header">
   <div class="logo">SPARTAN</div>
@@ -464,10 +510,12 @@ const CONFIG = {
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwcOb2NZX4FNQYTS_6koxlWXQT2fAX0M3bl8HAEArxVVJNVM02-4XBzKpoVMJD82mdC6Q/exec',
   SESSION_MINUTES: 10,
   SECRET_TOKEN: 'spt_7x9mK2pQvR4nWj8dLz3',
+  ADMIN_PASSWORD: 'Spartan2024',
 };
 
 let state = {
   cuil: null, objetivo: null, puesto: null, version: 'basica',
+  alias: null, configVersionSel: 'basica', configPendiente: null,
   tipo: null, sujeto: null, llave: null, acompañante: null,
   sessionTimer: null, sessionSeconds: CONFIG.SESSION_MINUTES * 60,
   photoBlobPatente: null, photoBlobBaul: null,
@@ -476,17 +524,166 @@ let state = {
 
 // ─── INIT ────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  state.objetivo = (params.get('objetivo') || 'PRUEBA').toUpperCase();
-  state.puesto   = (params.get('puesto')   || '1').toUpperCase();
-  state.version  = (params.get('version')  || 'basica').toLowerCase();
+  configurarLongPressLogo();
+  init();
+});
 
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const pObj = params.get('objetivo');
+  const pPst = params.get('puesto');
+
+  // 1) Parámetros en la URL → mandan (testeo desde navegador / links viejos)
+  if (pObj && pPst) {
+    state.objetivo = pObj.toUpperCase();
+    state.puesto   = pPst.toUpperCase();
+    state.version  = (params.get('version') || 'basica').toLowerCase();
+    aplicarConfigYArrancar();
+    return;
+  }
+
+  // 2) Config guardada en el dispositivo (modo alias)
+  const saved = cargarConfigLocal();
+  if (saved && saved.alias) {
+    state.alias    = saved.alias;
+    state.objetivo = saved.objetivo;
+    state.puesto   = saved.puesto;
+    state.version  = saved.version || 'basica';
+    aplicarConfigYArrancar();                  // arranca ya con lo guardado (anda offline)
+    refrescarConfigDesdeBackend(saved.alias);  // confirma contra el backend en segundo plano
+    return;
+  }
+
+  // 3) Sin config → pantalla de configuración
+  mostrarConfigScreen();
+}
+
+function aplicarConfigYArrancar() {
   let label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
   if (state.version === 'extended') label += ' · EXTENDIDO';
   document.getElementById('puestoInfoLabel').textContent = label;
-
+  document.getElementById('configScreen').style.display = 'none';
   cargarRegistros();
-});
+}
+
+// ─── CONFIG DEL DISPOSITIVO ───────────────────────────────────────
+function cargarConfigLocal() {
+  try { return JSON.parse(localStorage.getItem('spartan_device') || 'null'); }
+  catch { return null; }
+}
+function guardarConfigLocal(cfg) {
+  try { localStorage.setItem('spartan_device', JSON.stringify(cfg)); } catch(e) {}
+}
+
+function slugify(str) {
+  return str.trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
+function mostrarConfigScreen() {
+  document.getElementById('configTokenStep').style.display = 'flex';
+  document.getElementById('configFormStep').style.display = 'none';
+  document.getElementById('configToken').value = '';
+  document.getElementById('configTokenError').style.display = 'none';
+  setConfigVersion('basica');
+  document.getElementById('configScreen').style.display = 'flex';
+}
+
+function verificarConfigToken() {
+  const val = document.getElementById('configToken').value;
+  if (val === CONFIG.ADMIN_PASSWORD) {
+    document.getElementById('configTokenStep').style.display = 'none';
+    document.getElementById('configFormStep').style.display = 'flex';
+    const saved = cargarConfigLocal();
+    if (saved) {
+      document.getElementById('configAlias').value    = saved.alias    || '';
+      document.getElementById('configObjetivo').value = saved.objetivo || '';
+      document.getElementById('configPuesto').value   = saved.puesto   || '';
+      setConfigVersion(saved.version === 'extended' ? 'extended' : 'basica');
+    }
+  } else {
+    document.getElementById('configTokenError').style.display = 'block';
+    document.getElementById('configToken').value = '';
+  }
+}
+
+function setConfigVersion(v) {
+  state.configVersionSel = v;
+  document.getElementById('cfgVerBasica').className   = 'cfg-ver-btn' + (v === 'basica'   ? ' active' : '');
+  document.getElementById('cfgVerExtended').className = 'cfg-ver-btn' + (v === 'extended' ? ' active' : '');
+}
+
+async function guardarConfigDispositivo() {
+  const alias       = document.getElementById('configAlias').value.trim().toUpperCase();
+  const objetivoRaw = document.getElementById('configObjetivo').value.trim();
+  const puestoRaw   = document.getElementById('configPuesto').value.trim();
+  if (!alias)       { showToast('Ingresá un alias para el dispositivo', 'error'); return; }
+  if (!objetivoRaw) { showToast('Ingresá el objetivo', 'error'); return; }
+  if (!puestoRaw)   { showToast('Ingresá el puesto', 'error'); return; }
+
+  const objetivo = slugify(objetivoRaw);
+  const puesto   = slugify(puestoRaw);
+  const version  = state.configVersionSel || 'basica';
+
+  showLoading('Guardando configuración...');
+  try {
+    const payload = { token: CONFIG.SECRET_TOKEN, action: 'guardarDispositivo', alias, objetivo, puesto, version };
+    const resp = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    hideLoading();
+    if (!data.success) { showToast('Error al guardar: ' + (data.error || ''), 'error'); return; }
+
+    const c = data.config || { objetivo, puesto, version };
+    state.alias    = alias;
+    state.objetivo = c.objetivo;
+    state.puesto   = c.puesto;
+    state.version  = c.version || 'basica';
+    guardarConfigLocal({ alias, objetivo: state.objetivo, puesto: state.puesto, version: state.version });
+    showToast('✅ Dispositivo configurado', 'success');
+    aplicarConfigYArrancar();
+  } catch(e) {
+    hideLoading();
+    showToast('Sin conexión — no se pudo guardar', 'error');
+  }
+}
+
+async function refrescarConfigDesdeBackend(alias) {
+  try {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=config&alias=${encodeURIComponent(alias)}&token=${CONFIG.SECRET_TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!data.success || !data.config) return;   // alias borrado o sin datos → mantengo lo guardado
+    const c   = data.config;
+    const ver = c.version || 'basica';
+    const cambio = c.objetivo !== state.objetivo || c.puesto !== state.puesto || ver !== state.version;
+    guardarConfigLocal({ alias, objetivo: c.objetivo, puesto: c.puesto, version: ver });
+    if (!cambio) return;
+    if (state.cuil) {
+      // sesión activa → diferir, no cambiar el objetivo en medio de una carga
+      state.configPendiente = { alias, objetivo: c.objetivo, puesto: c.puesto, version: ver };
+    } else {
+      state.objetivo = c.objetivo; state.puesto = c.puesto; state.version = ver;
+      aplicarConfigYArrancar();
+    }
+  } catch(e) { /* offline → sigo con lo guardado */ }
+}
+
+function configurarLongPressLogo() {
+  const logoEl = document.querySelector('.header .logo');
+  if (!logoEl) return;
+  let timer = null;
+  const start  = () => { timer = setTimeout(mostrarConfigScreen, 1200); };
+  const cancel = () => { clearTimeout(timer); };
+  logoEl.addEventListener('touchstart', start, { passive: true });
+  logoEl.addEventListener('touchend', cancel);
+  logoEl.addEventListener('touchmove', cancel, { passive: true });
+  logoEl.addEventListener('mousedown', start);
+  logoEl.addEventListener('mouseup', cancel);
+  logoEl.addEventListener('mouseleave', cancel);
+}
 
 // ─── REGISTROS ───────────────────────────────────────────────────
 async function cargarRegistros() {
@@ -545,9 +742,7 @@ function iniciarSesion() {
   showScreen('screen2');
   document.getElementById('sessionTimer').style.display = 'block';
   iniciarTimer();
-  if (state.version === 'extended') {
-    document.getElementById('camposExtendidos').style.display = 'flex';
-  }
+  document.getElementById('camposExtendidos').style.display = (state.version === 'extended') ? 'flex' : 'none';
 }
 
 function iniciarTimer() {
@@ -579,7 +774,22 @@ function cerrarSesion() {
   limpiarFormulario();
   document.getElementById('cuilInput').value = '';
   showScreen('screen1');
+
+  // aplicar reasignación diferida (si llegó durante la sesión)
+  if (state.configPendiente) {
+    const c = state.configPendiente;
+    state.objetivo = c.objetivo; state.puesto = c.puesto; state.version = c.version || 'basica';
+    state.configPendiente = null;
+    guardarConfigLocal({ alias: c.alias, objetivo: state.objetivo, puesto: state.puesto, version: state.version });
+    let label = `Objetivo ${state.objetivo} — Puesto ${state.puesto}`;
+    if (state.version === 'extended') label += ' · EXTENDIDO';
+    document.getElementById('puestoInfoLabel').textContent = label;
+  }
+
   cargarRegistros();
+
+  // confirmar contra el backend para próximas reasignaciones (modo alias)
+  if (state.alias) refrescarConfigDesdeBackend(state.alias);
 }
 
 document.addEventListener('touchstart', () => { if (state.cuil) resetTimer(); });
