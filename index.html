@@ -414,11 +414,11 @@
 
     <div class="field-group">
       <div class="field-label">Patente</div>
-      <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB123CD" maxlength="10" style="text-transform:uppercase;">
+      <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB123CD" maxlength="10" style="text-transform:uppercase;" list="dlPatentes" autocomplete="off">
     </div>
     <div class="field-group">
       <div class="field-label">Conductor</div>
-      <input type="text" id="conductorInput" placeholder="Apellido y nombre">
+      <input type="text" id="conductorInput" placeholder="Apellido y nombre" list="dlConductores" autocomplete="off">
     </div>
   </div>
 
@@ -426,7 +426,7 @@
   <div id="camposPersona" style="display:none; flex-direction:column; gap:20px;">
     <div class="field-group">
       <div class="field-label">Nombre de la persona</div>
-      <input type="text" id="personaInput" placeholder="Apellido y nombre">
+      <input type="text" id="personaInput" placeholder="Apellido y nombre" list="dlPersonas" autocomplete="off">
     </div>
   </div>
 
@@ -504,6 +504,11 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- DATALISTS DE SUGERENCIAS -->
+<datalist id="dlPatentes"></datalist>
+<datalist id="dlConductores"></datalist>
+<datalist id="dlPersonas"></datalist>
 
 <script>
 const CONFIG = {
@@ -731,6 +736,31 @@ async function cargarRegistros() {
   }
 }
 
+// ─── SUGERENCIAS (autocompletar) ─────────────────────────────────
+async function cargarSugerencias() {
+  try {
+    const url = `${CONFIG.APPS_SCRIPT_URL}?action=sugerencias&objetivo=${encodeURIComponent(state.objetivo)}&puesto=${encodeURIComponent(state.puesto)}&token=${CONFIG.SECRET_TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!data.success || !data.sugerencias) return;
+    llenarDatalist('dlPatentes',    data.sugerencias.patentes);
+    llenarDatalist('dlConductores', data.sugerencias.conductores);
+    llenarDatalist('dlPersonas',    data.sugerencias.personas);
+  } catch(e) { /* sin sugerencias no pasa nada, el campo sigue libre */ }
+}
+
+function llenarDatalist(id, valores) {
+  const dl = document.getElementById(id);
+  if (!dl || !Array.isArray(valores)) return;
+  dl.innerHTML = valores.map(v => `<option value="${escapeHtmlAttr(v)}"></option>`).join('');
+}
+
+function escapeHtmlAttr(s) {
+  return s.toString()
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // ─── SESIÓN ──────────────────────────────────────────────────────
 function iniciarSesion() {
   const cuil = document.getElementById('cuilInput').value.trim();
@@ -743,6 +773,7 @@ function iniciarSesion() {
   document.getElementById('sessionTimer').style.display = 'block';
   iniciarTimer();
   document.getElementById('camposExtendidos').style.display = (state.version === 'extended') ? 'flex' : 'none';
+  cargarSugerencias();
 }
 
 function iniciarTimer() {
