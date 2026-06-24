@@ -348,6 +348,8 @@
 
   <div class="divider"></div>
 
+  <div id="outboxIndicator" style="display:none; background:#3a2e0d; border:1px solid #6b5410; color:#f0c000; font-size:12px; font-weight:600; padding:9px 12px; border-radius:8px; text-align:center;"></div>
+
   <div id="registrosPanel" style="display:flex; flex-direction:column; gap:8px;">
     <div class="registros-header">
       <div class="registros-title">Últimas 24 hs</div>
@@ -461,6 +463,8 @@
     <textarea id="obsInput" placeholder="Opcional"></textarea>
   </div>
 
+  <div id="outboxIndicator2" style="display:none; background:#fff8e1; border:1px solid #f59e0b; color:#78350f; font-size:12px; font-weight:600; padding:9px 12px; border-radius:8px; text-align:center; margin-bottom:4px;"></div>
+
   <button class="btn btn-primary" onclick="enviarRegistro()">ENVIAR REGISTRO</button>
   <button class="btn btn-secondary" onclick="cerrarSesion()">Cerrar sesión</button>
 
@@ -569,6 +573,8 @@ function aplicarConfigYArrancar() {
   document.getElementById('puestoInfoLabel').textContent = label;
   document.getElementById('configScreen').style.display = 'none';
   cargarRegistros();
+  actualizarIndicadorOutbox();
+  flushOutbox();
 }
 
 // ─── CONFIG DEL DISPOSITIVO ───────────────────────────────────────
@@ -774,6 +780,7 @@ function iniciarSesion() {
   iniciarTimer();
   document.getElementById('camposExtendidos').style.display = (state.version === 'extended') ? 'flex' : 'none';
   cargarSugerencias();
+  flushOutbox();
 }
 
 function iniciarTimer() {
@@ -818,6 +825,7 @@ function cerrarSesion() {
   }
 
   cargarRegistros();
+  flushOutbox();
 
   // confirmar contra el backend para próximas reasignaciones (modo alias)
   if (state.alias) refrescarConfigDesdeBackend(state.alias);
@@ -1063,10 +1071,19 @@ async function enviarRegistro() {
     };
 
     hideLoading();
+
+    // Guardado DURABLE: primero a la bandeja de salida (en el dispositivo),
+    // recién después se intenta enviar. Así nunca se pierde un registro.
+    const guardado = agregarAOutbox(payload);
+    if (!guardado) {
+      // Memoria del dispositivo llena: NO limpio el formulario, no pierdo el dato.
+      showToast('⚠️ Memoria del dispositivo llena. Conectate para enviar los registros pendientes.', 'error');
+      return;
+    }
     showToast('✅ Registro guardado', 'success');
     limpiarFormulario();
     resetTimer();
-    enviarEnBackground(payload);
+    flushOutbox();
 
   } catch(err) {
     hideLoading();
@@ -1074,18 +1091,68 @@ async function enviarRegistro() {
   }
 }
 
-async function enviarEnBackground(payload) {
-  const MAX = 3;
-  for (let i = 0; i < MAX; i++) {
-    try {
-      const resp   = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-      const result = await resp.json();
-      if (result.success) return;
-    } catch(e) {
-      if (i < MAX - 1) await new Promise(r => setTimeout(r, 2000));
+// ─── BANDEJA DE SALIDA (envío durable) ───────────────────────────
+const OUTBOX_KEY = 'spartan_outbox';
+let _flushing = false;
+
+function cargarOutbox() {
+  try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]'); }
+  catch { return []; }
+}
+function guardarOutboxArr(arr) {
+  try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(arr)); return true; }
+  catch(e) { return false; }   // cuota de localStorage llena
+}
+function agregarAOutbox(payload) {
+  const arr = cargarOutbox();
+  arr.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 8), payload });
+  const ok = guardarOutboxArr(arr);
+  actualizarIndicadorOutbox();
+  return ok;
+}
+function quitarDeOutbox(id) {
+  const arr = cargarOutbox().filter(it => it.id !== id);
+  guardarOutboxArr(arr);
+  actualizarIndicadorOutbox();
+}
+
+async function flushOutbox() {
+  if (_flushing) return;
+  const arr = cargarOutbox();
+  if (arr.length === 0) { actualizarIndicadorOutbox(); return; }
+  _flushing = true;
+  try {
+    for (const item of arr) {
+      let enviado = false;
+      for (let intento = 0; intento < 2 && !enviado; intento++) {
+        try {
+          const resp   = await fetch(CONFIG.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(item.payload) });
+          const result = await resp.json();
+          if (result && result.success) enviado = true;
+        } catch(e) { /* sin red */ }
+        if (!enviado && intento === 0) await new Promise(r => setTimeout(r, 1500));
+      }
+      if (enviado) {
+        quitarDeOutbox(item.id);
+      } else {
+        break;   // red caída: dejo el resto en la bandeja y reintento más tarde
+      }
     }
+  } finally {
+    _flushing = false;
+    actualizarIndicadorOutbox();
   }
-  showToast('⚠️ No se pudo sincronizar — verificá la conexión', 'error');
+}
+
+function actualizarIndicadorOutbox() {
+  const n = cargarOutbox().length;
+  const txt = n > 0 ? `⏳ ${n} registro${n !== 1 ? 's' : ''} sin enviar — se reintenta solo` : '';
+  ['outboxIndicator', 'outboxIndicator2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = txt;
+    el.style.display = n > 0 ? 'block' : 'none';
+  });
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────
@@ -1186,6 +1253,17 @@ function hideLoading() {
 }
 
 setInterval(() => { if (state.cuil) actualizarFecha(); }, 60000);
+
+// Reintento de la bandeja de salida: al recuperar conexión y cada 60s si hay pendientes
+window.addEventListener('online', flushOutbox);
+setInterval(() => { if (cargarOutbox().length > 0) flushOutbox(); }, 60000);
+
+// ─── SERVICE WORKER (arranque offline de la cáscara) ─────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
