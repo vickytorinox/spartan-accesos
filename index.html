@@ -128,6 +128,8 @@
   .patente-field::placeholder { font-family: 'DM Sans', sans-serif; font-size: 14px; letter-spacing: 1px; opacity: 0.3; text-transform: none; }
 
   .tipo-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tipo-selector-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .tipo-selector-3 .tipo-btn { font-size: 17px; letter-spacing: 1px; padding: 16px 4px; white-space: nowrap; }
   .tipo-btn {
     padding: 18px 10px; border: 2px solid var(--border); border-radius: 10px;
     background: var(--surface); color: var(--text);
@@ -143,6 +145,8 @@
   #screen2 .tipo-btn.selected-llave-deja   { background: #fff8e1; border-color: #f59e0b; color: #78350f; }
   .tipo-btn.selected-llave-retira,
   #screen2 .tipo-btn.selected-llave-retira { background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+  .tipo-btn.selected-llave-no,
+  #screen2 .tipo-btn.selected-llave-no     { background: #f3f4f6; border-color: #9ca3af; color: #374151; }
   .tipo-btn.selected-si,
   #screen2 .tipo-btn.selected-si           { background: #d4f5e2; border-color: #1db954; color: #0f5c2a; }
   .tipo-btn.selected-no,
@@ -437,9 +441,10 @@
 
     <div id="campoLlave" style="display:none;" class="field-group">
       <div class="field-label">🔑 Llave</div>
-      <div class="tipo-selector">
-        <button type="button" class="tipo-btn" id="btnDejaLlave"   onclick="seleccionarLlave('DEJA')">🔑 DEJA LLAVE</button>
-        <button type="button" class="tipo-btn" id="btnRetiraLlave" onclick="seleccionarLlave('RETIRA')">🔑 RETIRA LLAVE</button>
+      <div class="tipo-selector tipo-selector-3">
+        <button type="button" class="tipo-btn" id="btnDejaLlave"   onclick="seleccionarLlave('DEJA')">🔑 DEJA</button>
+        <button type="button" class="tipo-btn" id="btnRetiraLlave" onclick="seleccionarLlave('RETIRA')">🔑 RETIRA</button>
+        <button type="button" class="tipo-btn" id="btnNoLlave"     onclick="seleccionarLlave('NO_DEJA')">🔑 NO DEJA</button>
       </div>
     </div>
 
@@ -548,6 +553,7 @@ async function init() {
     state.puesto   = pPst.toUpperCase();
     state.version  = (params.get('version') || 'basica').toLowerCase();
     aplicarConfigYArrancar();
+    restaurarSesion();
     return;
   }
 
@@ -559,6 +565,7 @@ async function init() {
     state.puesto   = saved.puesto;
     state.version  = saved.version || 'basica';
     aplicarConfigYArrancar();                  // arranca ya con lo guardado (anda offline)
+    restaurarSesion();                         // si había sesión vigente, vuelve directo a pantalla 2
     refrescarConfigDesdeBackend(saved.alias);  // confirma contra el backend en segundo plano
     return;
   }
@@ -719,7 +726,12 @@ async function cargarRegistros() {
       const icono     = esVeh ? '🚗' : '🚶';
       const idLinea   = esVeh ? `${icono} ${r.patente}` : `${icono} ${r.conductor}`;
       let   subLinea  = esVeh ? r.conductor : 'Persona';
-      if (r.llave) subLinea += ` · 🔑 ${r.llave === 'DEJA' ? 'Deja llave' : 'Retira llave'}`;
+      if (r.llave) {
+        const etLlave = r.llave === 'DEJA' ? 'Deja llave'
+                      : r.llave === 'RETIRA' ? 'Retira llave'
+                      : r.llave === 'NO_DEJA' ? 'No deja llave' : '';
+        if (etLlave) subLinea += ` · 🔑 ${etLlave}`;
+      }
       const fechaCorta = r.fecha ? r.fecha.slice(0,5) : '';
 
       return `<div class="registro-row">
@@ -768,6 +780,9 @@ function escapeHtmlAttr(s) {
 }
 
 // ─── SESIÓN ──────────────────────────────────────────────────────
+const SESSION_KEY = 'spartan_session';
+let _lastPersistSesion = 0;
+
 function iniciarSesion() {
   const cuil = document.getElementById('cuilInput').value.trim();
   if (!cuil) { showToast('Ingresá tu CUIL', 'error'); return; }
@@ -778,22 +793,60 @@ function iniciarSesion() {
   showScreen('screen2');
   document.getElementById('sessionTimer').style.display = 'block';
   iniciarTimer();
+  persistSesion(true);
   document.getElementById('camposExtendidos').style.display = (state.version === 'extended') ? 'flex' : 'none';
   cargarSugerencias();
   flushOutbox();
 }
 
-function iniciarTimer() {
-  state.sessionSeconds = CONFIG.SESSION_MINUTES * 60;
+// Restaura la sesión si quedó una vigente (no expirada) al reabrir/refrescar
+function restaurarSesion() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { s = null; }
+  if (!s || !s.cuil || !s.expiry) return;
+  const restante = Math.floor((s.expiry - Date.now()) / 1000);
+  if (restante <= 0) { limpiarSesionPersistida(); return; }
+
+  state.cuil = s.cuil;
+  state.sessionSeconds = restante;
+  document.getElementById('cuilDisplay').textContent = s.cuil;
+  document.getElementById('puestoDisplay').textContent = `Obj. ${state.objetivo} — Puesto ${state.puesto}`;
+  actualizarFecha();
+  showScreen('screen2');
+  document.getElementById('sessionTimer').style.display = 'block';
+  iniciarTimer(false);   // sin reiniciar: conserva el tiempo restante
+  document.getElementById('camposExtendidos').style.display = (state.version === 'extended') ? 'flex' : 'none';
+  cargarSugerencias();
+  flushOutbox();
+}
+
+function persistSesion(force) {
+  if (!state.cuil) return;
+  const now = Date.now();
+  if (!force && now - _lastPersistSesion < 5000) return;   // máx 1 escritura cada 5s
+  _lastPersistSesion = now;
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ cuil: state.cuil, expiry: now + state.sessionSeconds * 1000 }));
+  } catch(e) {}
+}
+
+function limpiarSesionPersistida() {
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+function iniciarTimer(reset = true) {
+  if (reset) state.sessionSeconds = CONFIG.SESSION_MINUTES * 60;
   clearInterval(state.sessionTimer);
+  actualizarTimerDisplay();
   state.sessionTimer = setInterval(() => {
     state.sessionSeconds--;
     actualizarTimerDisplay();
+    persistSesion();
     if (state.sessionSeconds <= 0) cerrarSesion();
   }, 1000);
 }
 
-function resetTimer() { state.sessionSeconds = CONFIG.SESSION_MINUTES * 60; }
+function resetTimer() { state.sessionSeconds = CONFIG.SESSION_MINUTES * 60; persistSesion(); }
 
 function actualizarTimerDisplay() {
   const m = Math.floor(state.sessionSeconds / 60);
@@ -807,6 +860,7 @@ function actualizarTimerDisplay() {
 
 function cerrarSesion() {
   clearInterval(state.sessionTimer);
+  limpiarSesionPersistida();
   state.cuil = null;
   document.getElementById('sessionTimer').style.display = 'none';
   limpiarFormulario();
@@ -858,6 +912,7 @@ function seleccionarSujeto(sujeto) {
     state.llave = null; state.acompañante = null;
     document.getElementById('btnDejaLlave').className   = 'tipo-btn';
     document.getElementById('btnRetiraLlave').className = 'tipo-btn';
+    document.getElementById('btnNoLlave').className     = 'tipo-btn';
     document.getElementById('btnAcompSi').className     = 'tipo-btn';
     document.getElementById('btnAcompNo').className     = 'tipo-btn';
     document.getElementById('campoNombresAcomp').classList.remove('visible');
@@ -873,8 +928,9 @@ function seleccionarTipo(tipo) {
 
 function seleccionarLlave(opcion) {
   state.llave = opcion;
-  document.getElementById('btnDejaLlave').className   = 'tipo-btn' + (opcion === 'DEJA'   ? ' selected-llave-deja'   : '');
-  document.getElementById('btnRetiraLlave').className = 'tipo-btn' + (opcion === 'RETIRA' ? ' selected-llave-retira' : '');
+  document.getElementById('btnDejaLlave').className   = 'tipo-btn' + (opcion === 'DEJA'    ? ' selected-llave-deja'   : '');
+  document.getElementById('btnRetiraLlave').className = 'tipo-btn' + (opcion === 'RETIRA'  ? ' selected-llave-retira' : '');
+  document.getElementById('btnNoLlave').className     = 'tipo-btn' + (opcion === 'NO_DEJA' ? ' selected-llave-no'     : '');
 }
 
 function seleccionarAcompañante(opcion) {
@@ -1185,6 +1241,7 @@ function limpiarFormulario() {
 
   document.getElementById('btnDejaLlave').className   = 'tipo-btn';
   document.getElementById('btnRetiraLlave').className = 'tipo-btn';
+  document.getElementById('btnNoLlave').className     = 'tipo-btn';
   document.getElementById('btnAcompSi').className     = 'tipo-btn';
   document.getElementById('btnAcompNo').className     = 'tipo-btn';
   document.getElementById('campoLlave').style.display = 'none';
