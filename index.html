@@ -1160,8 +1160,10 @@ function guardarOutboxArr(arr) {
   catch(e) { return false; }   // cuota de localStorage llena
 }
 function agregarAOutbox(payload) {
+  const id = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  payload.regId = id;                 // ID único para idempotencia (evita duplicados)
   const arr = cargarOutbox();
-  arr.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 8), payload });
+  arr.push({ id, payload });
   const ok = guardarOutboxArr(arr);
   actualizarIndicadorOutbox();
   return ok;
