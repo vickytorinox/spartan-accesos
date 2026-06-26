@@ -426,6 +426,10 @@
       <div class="field-label">Conductor</div>
       <input type="text" id="conductorInput" placeholder="Apellido y nombre" list="dlConductores" autocomplete="off">
     </div>
+    <div class="field-group">
+      <div class="field-label">DNI del conductor</div>
+      <input type="text" id="dniConductorInput" placeholder="Sin puntos" inputmode="numeric">
+    </div>
   </div>
 
   <!-- Campos PERSONA -->
@@ -433,6 +437,10 @@
     <div class="field-group">
       <div class="field-label">Nombre de la persona</div>
       <input type="text" id="personaInput" placeholder="Apellido y nombre" list="dlPersonas" autocomplete="off">
+    </div>
+    <div class="field-group">
+      <div class="field-label">DNI de la persona</div>
+      <input type="text" id="dniPersonaInput" placeholder="Sin puntos" inputmode="numeric">
     </div>
   </div>
 
@@ -1069,18 +1077,22 @@ async function enviarRegistro() {
     }
   }
 
-  let patente = '', conductor = '';
+  let patente = '', conductor = '', dni = '';
 
   if (state.sujeto === 'VEHICULO') {
     patente   = document.getElementById('patenteInput').value.trim().toUpperCase();
     conductor = document.getElementById('conductorInput').value.trim();
+    dni       = document.getElementById('dniConductorInput').value.trim();
     if (!state.photoBlobPatente) { showToast('Sacá la foto de la patente', 'error'); return; }
     if (!state.photoBlobBaul)    { showToast('Sacá la foto del baúl',       'error'); return; }
     if (!patente)                { showToast('Ingresá la patente',           'error'); return; }
     if (!conductor)              { showToast('Ingresá el nombre del conductor', 'error'); return; }
+    if (!dni)                    { showToast('Ingresá el DNI del conductor',  'error'); return; }
   } else {
     const persona = document.getElementById('personaInput').value.trim();
+    dni = document.getElementById('dniPersonaInput').value.trim();
     if (!persona) { showToast('Ingresá el nombre de la persona', 'error'); return; }
+    if (!dni)     { showToast('Ingresá el DNI de la persona',    'error'); return; }
     patente = 'CAMINANDO'; conductor = persona;
   }
 
@@ -1119,7 +1131,7 @@ async function enviarRegistro() {
       token: CONFIG.SECRET_TOKEN,
       cuil: state.cuil, fecha, hora,
       objetivo: state.objetivo || '', puesto: state.puesto || '', version: state.version,
-      tipo: state.tipo, patente, conductor, observaciones: obs,
+      tipo: state.tipo, patente, conductor, dni, observaciones: obs,
       latitud, longitud,
       fotoBase64Patente, nombreFotoPatente,
       fotoBase64Baul,    nombreFotoBaul,
@@ -1226,7 +1238,9 @@ function limpiarFormulario() {
 
   document.getElementById('patenteInput').value   = '';
   document.getElementById('conductorInput').value = '';
+  document.getElementById('dniConductorInput').value = '';
   document.getElementById('personaInput').value   = '';
+  document.getElementById('dniPersonaInput').value = '';
   document.getElementById('obsInput').value       = '';
 
   document.getElementById('btnIngreso').className  = 'tipo-btn';
