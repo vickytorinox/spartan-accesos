@@ -537,7 +537,7 @@ const CONFIG = {
 
 let state = {
   cuil: null, objetivo: null, puesto: null, version: 'basica',
-  alias: null, configVersionSel: 'basica', configPendiente: null,
+  alias: null, configVersionSel: 'basica', configPendiente: null, configEliminada: false,
   tipo: null, sujeto: null, llave: null, acompañante: null,
   sessionTimer: null, sessionSeconds: CONFIG.SESSION_MINUTES * 60,
   photoBlobPatente: null, photoBlobBaul: null,
@@ -677,24 +677,47 @@ async function guardarConfigDispositivo() {
 }
 
 async function refrescarConfigDesdeBackend(alias) {
+  let data;
   try {
     const url = `${CONFIG.APPS_SCRIPT_URL}?action=config&alias=${encodeURIComponent(alias)}&token=${CONFIG.SECRET_TOKEN}`;
     const resp = await fetch(url);
-    const data = await resp.json();
-    if (!data.success || !data.config) return;   // alias borrado o sin datos → mantengo lo guardado
-    const c   = data.config;
-    const ver = c.version || 'basica';
-    const cambio = c.objetivo !== state.objetivo || c.puesto !== state.puesto || ver !== state.version;
-    guardarConfigLocal({ alias, objetivo: c.objetivo, puesto: c.puesto, version: ver });
-    if (!cambio) return;
+    data = await resp.json();
+  } catch(e) {
+    return;   // SIN RED → mantengo lo guardado, no toco nada (clave para no borrar en un corte)
+  }
+
+  // El backend respondió. Si dice success pero NO hay config, el alias fue
+  // eliminado del panel → borro la config de esta tablet y pido el setup de nuevo.
+  if (data && data.success && !data.config) {
     if (state.cuil) {
-      // sesión activa → diferir, no cambiar el objetivo en medio de una carga
-      state.configPendiente = { alias, objetivo: c.objetivo, puesto: c.puesto, version: ver };
+      // sesión activa → no borro en medio de una carga; lo dejo pendiente para el cierre de sesión
+      state.configEliminada = true;
     } else {
-      state.objetivo = c.objetivo; state.puesto = c.puesto; state.version = ver;
-      aplicarConfigYArrancar();
+      borrarConfigYReconfigurar();
     }
-  } catch(e) { /* offline → sigo con lo guardado */ }
+    return;
+  }
+  if (!data || !data.success || !data.config) return;   // error del backend → mantengo lo guardado
+
+  const c   = data.config;
+  const ver = c.version || 'basica';
+  const cambio = c.objetivo !== state.objetivo || c.puesto !== state.puesto || ver !== state.version;
+  guardarConfigLocal({ alias, objetivo: c.objetivo, puesto: c.puesto, version: ver });
+  if (!cambio) return;
+  if (state.cuil) {
+    state.configPendiente = { alias, objetivo: c.objetivo, puesto: c.puesto, version: ver };
+  } else {
+    state.objetivo = c.objetivo; state.puesto = c.puesto; state.version = ver;
+    aplicarConfigYArrancar();
+  }
+}
+
+// Borra la configuración del dispositivo y vuelve a la pantalla de setup
+function borrarConfigYReconfigurar() {
+  try { localStorage.removeItem('spartan_device'); } catch(e) {}
+  state.alias = null; state.objetivo = null; state.puesto = null; state.version = 'basica';
+  state.configEliminada = false;
+  mostrarConfigScreen();
 }
 
 function configurarLongPressLogo() {
@@ -874,6 +897,12 @@ function cerrarSesion() {
   limpiarFormulario();
   document.getElementById('cuilInput').value = '';
   showScreen('screen1');
+
+  // si el dispositivo fue eliminado durante la sesión, borro la config ahora
+  if (state.configEliminada) {
+    borrarConfigYReconfigurar();
+    return;
+  }
 
   // aplicar reasignación diferida (si llegó durante la sesión)
   if (state.configPendiente) {

@@ -316,6 +316,16 @@
 
   /* ─── FLOTA DE DISPOSITIVOS ─── */
   .fleet-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn-delete {
+    background: transparent;
+    border: 1px solid #e0a0a0;
+    color: #c0152f;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .btn-delete:hover { background: #fef2f2; border-color: #c0152f; }
   .add-device-form {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -393,14 +403,6 @@
 
 <div class="main">
 
-  <!-- BASE URL CONFIG -->
-  <div class="section-title">URL base de la app</div>
-  <div class="config-bar">
-    <label>URL Base</label>
-    <input type="text" id="baseUrlInput" placeholder="https://ingresos.sgseguridad.com/" oninput="guardarConfig()">
-    <span style="font-size:12px; color:#4a7a5c;">Modificá con tu URL real</span>
-  </div>
-
   <!-- FLOTA DE DISPOSITIVOS -->
   <div class="section-title">Flota de dispositivos</div>
   <div class="fleet-bar">
@@ -433,22 +435,6 @@
 
   <div id="dispositivosList"></div>
 
-  <div style="height:32px;"></div>
-
-  <!-- ADD OBJETIVO -->
-  <div class="section-title">Agregar objetivo</div>
-  <div class="add-form">
-    <div class="form-field">
-      <div class="form-label">Nombre del objetivo</div>
-      <input type="text" id="nuevoObjetivo" placeholder="Ej: Banco Provincia" onkeydown="if(event.key==='Enter') agregarObjetivo()">
-    </div>
-    <button class="btn btn-green" onclick="agregarObjetivo()">+ AGREGAR</button>
-  </div>
-
-  <!-- OBJETIVOS -->
-  <div class="section-title">Objetivos y puestos</div>
-  <div id="objetivosList"></div>
-
 </div>
 
 <datalist id="objetivosDatalist"></datalist>
@@ -457,30 +443,6 @@
 // ─── BACKEND ──────────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcOb2NZX4FNQYTS_6koxlWXQT2fAX0M3bl8HAEArxVVJNVM02-4XBzKpoVMJD82mdC6Q/exec';
 const SECRET_TOKEN = 'spt_7x9mK2pQvR4nWj8dLz3';
-
-// ─── STORAGE ──────────────────────────────────────────────────
-function cargarDatos() {
-  try {
-    return JSON.parse(localStorage.getItem('spartan_admin') || '{"baseUrl":"","objetivos":[]}');
-  } catch { return { baseUrl: '', objetivos: [] }; }
-}
-
-function guardarDatos(data) {
-  localStorage.setItem('spartan_admin', JSON.stringify(data));
-}
-
-function guardarConfig() {
-  const data = cargarDatos();
-  data.baseUrl = document.getElementById('baseUrlInput').value.trim();
-  guardarDatos(data);
-  renderAll();
-}
-
-// ─── INIT ──────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  const data = cargarDatos();
-  document.getElementById('baseUrlInput').value = data.baseUrl || '';
-});
 
 // ─── HELPERS ──────────────────────────────────────────────────
 function slugify(str) {
@@ -491,163 +453,13 @@ function slugify(str) {
     .replace(/^_|_$/g, '');
 }
 
-function buildUrl(baseUrl, objetivo, puesto, version) {
-  const base = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
-  let url = `${base}?objetivo=${encodeURIComponent(slugify(objetivo))}&puesto=${encodeURIComponent(slugify(puesto))}`;
-  if (version === 'extended') url += '&version=extended';
-  return url;
-}
 
-// ─── AGREGAR OBJETIVO ─────────────────────────────────────────
-function agregarObjetivo() {
-  const nombre = document.getElementById('nuevoObjetivo').value.trim();
-  if (!nombre) return;
-  const data = cargarDatos();
-  if (data.objetivos.find(o => slugify(o.nombre) === slugify(nombre))) {
-    alert('Ya existe un objetivo con ese nombre.');
-    return;
-  }
-  data.objetivos.push({ nombre, puestos: [] });
-  guardarDatos(data);
-  document.getElementById('nuevoObjetivo').value = '';
-  renderAll();
-}
-
-function eliminarObjetivo(idx) {
-  if (!confirm('¿Eliminar este objetivo y todos sus puestos?')) return;
-  const data = cargarDatos();
-  data.objetivos.splice(idx, 1);
-  guardarDatos(data);
-  renderAll();
-}
-
-// ─── VERSION TOGGLE (puestos) ─────────────────────────────────
-const versionSeleccionada = {};
-
-function setVersionToggle(objIdx, ver) {
-  versionSeleccionada[objIdx] = ver;
-  const btnBasica    = document.getElementById(`vBtn_basica_${objIdx}`);
-  const btnExtended  = document.getElementById(`vBtn_extended_${objIdx}`);
-  if (!btnBasica || !btnExtended) return;
-  btnBasica.className   = ver === 'basica'    ? 'active-basica'   : '';
-  btnExtended.className = ver === 'extended'  ? 'active-extended' : '';
-}
-
-// ─── AGREGAR PUESTO ───────────────────────────────────────────
-function agregarPuesto(objIdx) {
-  const input = document.getElementById(`nuevoPuesto_${objIdx}`);
-  const nombre = input.value.trim();
-  if (!nombre) return;
-  const version = versionSeleccionada[objIdx] || 'basica';
-  const data = cargarDatos();
-  data.objetivos[objIdx].puestos.push({ nombre, version });
-  guardarDatos(data);
-  input.value = '';
-  renderAll();
-  setTimeout(() => {
-    const body = document.getElementById(`body_${objIdx}`);
-    if (body) { body.classList.add('open'); document.getElementById(`chevron_${objIdx}`).classList.add('open'); }
-  }, 10);
-}
-
-function eliminarPuesto(objIdx, puestoIdx) {
-  const data = cargarDatos();
-  data.objetivos[objIdx].puestos.splice(puestoIdx, 1);
-  guardarDatos(data);
-  renderAll();
-  setTimeout(() => {
-    const body = document.getElementById(`body_${objIdx}`);
-    if (body) { body.classList.add('open'); document.getElementById(`chevron_${objIdx}`).classList.add('open'); }
-  }, 10);
-}
-
-// ─── COPIAR URL ───────────────────────────────────────────────
-function copiarUrl(url, btnId) {
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.getElementById(btnId);
-    btn.textContent = '✓ Copiado';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copiar URL'; btn.classList.remove('copied'); }, 2000);
-  });
-}
-
-// ─── TOGGLE OBJETIVO ──────────────────────────────────────────
-function toggleObjetivo(idx) {
-  const body = document.getElementById(`body_${idx}`);
-  const chevron = document.getElementById(`chevron_${idx}`);
-  body.classList.toggle('open');
-  chevron.classList.toggle('open');
-}
-
-// ─── RENDER OBJETIVOS ─────────────────────────────────────────
-function renderAll() {
-  actualizarObjetivosDatalist();
-  const data = cargarDatos();
-  const baseUrl = data.baseUrl || 'https://ingresos.sgseguridad.com/';
-  const container = document.getElementById('objetivosList');
-
-  if (data.objetivos.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">🏢</div>
-        <div class="empty-text">No hay objetivos todavía.<br>Agregá el primero arriba.</div>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = data.objetivos.map((obj, objIdx) => `
-    <div class="objetivo-card">
-      <div class="objetivo-header" onclick="toggleObjetivo(${objIdx})">
-        <div class="objetivo-name">${obj.nombre}</div>
-        <div class="objetivo-meta">
-          <span class="puesto-count">${obj.puestos.length} puesto${obj.puestos.length !== 1 ? 's' : ''}</span>
-          <button class="btn-danger" onclick="event.stopPropagation(); eliminarObjetivo(${objIdx})">🗑</button>
-          <span class="chevron" id="chevron_${objIdx}">▼</span>
-        </div>
-      </div>
-      <div class="objetivo-body" id="body_${objIdx}">
-        <div class="puestos-list">
-          ${obj.puestos.length === 0
-            ? `<div style="color:var(--muted); font-size:13px; padding:8px 0;">Sin puestos aún — agregá uno abajo.</div>`
-            : obj.puestos.map((p, pIdx) => {
-                const ver = p.version || 'basica';
-                const url = buildUrl(baseUrl, obj.nombre, p.nombre, ver);
-                const btnId = `copybtn_${objIdx}_${pIdx}`;
-                const badge = ver === 'extended'
-                  ? `<span class="badge-extended">Extendido</span>`
-                  : `<span class="badge-basica">Básico</span>`;
-                return `
-                  <div class="puesto-row">
-                    <div class="puesto-info">
-                      <div class="puesto-name">${p.nombre}${badge}</div>
-                      <div class="puesto-url">${url}</div>
-                    </div>
-                    <div class="puesto-actions">
-                      <button class="copy-btn" id="${btnId}" onclick="copiarUrl('${url}', '${btnId}')">Copiar URL</button>
-                      <button class="btn-danger" onclick="eliminarPuesto(${objIdx}, ${pIdx})">🗑</button>
-                    </div>
-                  </div>`;
-              }).join('')
-          }
-        </div>
-        <div class="add-puesto-form">
-          <input type="text" id="nuevoPuesto_${objIdx}" placeholder="Nombre del puesto" onkeydown="if(event.key==='Enter') agregarPuesto(${objIdx})">
-          <div class="version-toggle" id="versionToggle_${objIdx}">
-            <button id="vBtn_basica_${objIdx}" class="active-basica" onclick="setVersionToggle(${objIdx},'basica')">Básico</button>
-            <button id="vBtn_extended_${objIdx}" onclick="setVersionToggle(${objIdx},'extended')">Extendido</button>
-          </div>
-          <button class="btn btn-outline" onclick="agregarPuesto(${objIdx})">+ Puesto</button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
+// ─── DATALIST DE OBJETIVOS (se nutre de los dispositivos cargados) ──
+let objetivosConocidos = [];
 function actualizarObjetivosDatalist() {
   const dl = document.getElementById('objetivosDatalist');
   if (!dl) return;
-  const data = cargarDatos();
-  dl.innerHTML = data.objetivos.map(o => `<option value="${slugify(o.nombre)}">`).join('');
+  dl.innerHTML = objetivosConocidos.map(o => `<option value="${o}">`).join('');
 }
 
 // ─── FLOTA DE DISPOSITIVOS ────────────────────────────────────
@@ -691,6 +503,10 @@ function renderDispositivos(lista) {
   const cont = document.getElementById('dispositivosList');
   devEditVersion = {};
 
+  // alimentar el datalist de objetivos con los que ya existen en la flota
+  objetivosConocidos = [...new Set(lista.map(d => (d.objetivo || '').toString().trim()).filter(Boolean))].sort();
+  actualizarObjetivosDatalist();
+
   if (!lista.length) {
     cont.innerHTML = `
       <div class="empty">
@@ -719,6 +535,7 @@ function renderDispositivos(lista) {
           </div>
           <div class="device-actions">
             <button class="btn btn-outline" onclick="toggleEditor(${i})">Reasignar</button>
+            <button class="btn btn-delete" onclick="eliminarDispositivo('${aliasEnc}', this)">Eliminar</button>
           </div>
         </div>
         <div class="device-editor" id="devEditor_${i}">
@@ -756,6 +573,29 @@ function setDevEditVersion(i, v) {
   devEditVersion[i] = v;
   document.getElementById(`devVerB_${i}`).className = v === 'basica'   ? 'active-basica'   : '';
   document.getElementById(`devVerE_${i}`).className = v === 'extended' ? 'active-extended' : '';
+}
+
+async function eliminarDispositivo(aliasEnc, btn) {
+  const alias = decodeURIComponent(aliasEnc);
+  const ok = confirm(
+    `¿Realmente deseás eliminar el dispositivo "${alias}"?\n\n` +
+    `La configuración se borrará de la tablet donde esté instalado la próxima vez que se conecte, ` +
+    `y habrá que ir a asistirla y configurarla nuevamente en el lugar.`
+  );
+  if (!ok) return;
+
+  const prev = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Eliminando...';
+  try {
+    const payload = { token: SECRET_TOKEN, action: 'eliminarDispositivo', alias };
+    const resp = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    if (!data.success) { alert('Error al eliminar: ' + (data.error || '')); btn.disabled = false; btn.textContent = prev; return; }
+    await cargarDispositivos();
+  } catch(e) {
+    alert('No se pudo conectar con el backend');
+    btn.disabled = false; btn.textContent = prev;
+  }
 }
 
 function guardarReasignacion(i, aliasEnc, btn) {
@@ -813,7 +653,6 @@ function verificarPassword() {
   if (input === PASSWORD) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminContent').style.display = 'block';
-    renderAll();
     cargarDispositivos();
   } else {
     document.getElementById('loginError').style.display = 'block';
