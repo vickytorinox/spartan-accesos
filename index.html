@@ -391,6 +391,15 @@
     </div>
   </div>
 
+  <div id="campoTipoVeh" style="display:none;" class="field-group">
+    <div class="field-label">🚗 Tipo de vehículo</div>
+    <div class="tipo-selector tipo-selector-3">
+      <button type="button" class="tipo-btn" id="btnVehAuto"     onclick="seleccionarTipoVehiculo('AUTO')">AUTO</button>
+      <button type="button" class="tipo-btn" id="btnVehCisterna" onclick="seleccionarTipoVehiculo('CISTERNA')">CISTERNA</button>
+      <button type="button" class="tipo-btn" id="btnVehCamion"   onclick="seleccionarTipoVehiculo('CAMION')">CAMIÓN</button>
+    </div>
+  </div>
+
   <div class="field-group">
     <div class="field-label">Movimiento</div>
     <div class="tipo-selector">
@@ -446,15 +455,6 @@
 
   <!-- CAMPOS EXTENDIDOS -->
   <div id="camposExtendidos" class="campos-extendidos" style="display:none;">
-
-    <div id="campoTipoVeh" style="display:none;" class="field-group">
-      <div class="field-label">🚗 Tipo de vehículo</div>
-      <div class="tipo-selector tipo-selector-3">
-        <button type="button" class="tipo-btn" id="btnVehAuto"     onclick="seleccionarTipoVehiculo('AUTO')">AUTO</button>
-        <button type="button" class="tipo-btn" id="btnVehCisterna" onclick="seleccionarTipoVehiculo('CISTERNA')">CISTERNA</button>
-        <button type="button" class="tipo-btn" id="btnVehCamion"   onclick="seleccionarTipoVehiculo('CAMION')">CAMIÓN</button>
-      </div>
-    </div>
 
     <div id="campoLlave" style="display:none;" class="field-group">
       <div class="field-label">🔑 Llave</div>
