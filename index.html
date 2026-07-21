@@ -420,14 +420,6 @@
     </div>
 
     <div class="field-group">
-      <div class="field-label">📷 Foto del baúl</div>
-      <div class="photo-zone" id="photoZoneBaul" onclick="abrirCamara('baul')">
-        <div class="photo-icon">🚗</div>
-        <div class="photo-hint">Tocá para sacar foto del baúl</div>
-      </div>
-    </div>
-
-    <div class="field-group">
       <div class="field-label">Patente</div>
       <input type="text" class="patente-field" id="patenteInput" placeholder="Ej: AB123CD" maxlength="10" style="text-transform:uppercase;" list="dlPatentes" autocomplete="off">
     </div>
@@ -549,7 +541,7 @@ let state = {
   alias: null, configVersionSel: 'basica', configPendiente: null, configEliminada: false,
   tipo: null, sujeto: null, llave: null, acompañante: null, tipoVehiculo: null,
   sessionTimer: null, sessionSeconds: CONFIG.SESSION_MINUTES * 60,
-  photoBlobPatente: null, photoBlobBaul: null,
+  photoBlobPatente: null,
   camaraTarget: null, flashActivo: false, streamActivo: null,
 };
 
@@ -1018,7 +1010,7 @@ async function abrirCamara(target) {
 
     // Label contextual
     const labelEl = document.getElementById('camaraLabel').querySelector('span');
-    labelEl.textContent = target === 'patente' ? '📷 FOTO PATENTE' : '🚗 FOTO BAÚL';
+    labelEl.textContent = '📷 FOTO PATENTE';
 
     // Flash automático nocturno
     const hora = new Date().getHours();
@@ -1065,15 +1057,9 @@ function tomarFoto() {
 
   canvas.toBlob((blob) => {
     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-    const target  = state.camaraTarget;
     cerrarStreamCamara();
-    if (target === 'patente') {
-      state.photoBlobPatente = blob;
-      mostrarFotoPreview('photoZonePatente', dataUrl, 'patente');
-    } else {
-      state.photoBlobBaul = blob;
-      mostrarFotoPreview('photoZoneBaul', dataUrl, 'baul');
-    }
+    state.photoBlobPatente = blob;
+    mostrarFotoPreview('photoZonePatente', dataUrl, 'patente');
   }, 'image/jpeg', 0.7);
 }
 
@@ -1138,7 +1124,6 @@ async function enviarRegistro() {
     conductor = document.getElementById('conductorInput').value.trim();
     dni       = document.getElementById('dniConductorInput').value.trim();
     if (!state.photoBlobPatente) { showToast('Sacá la foto de la patente', 'error'); return; }
-    if (!state.photoBlobBaul)    { showToast('Sacá la foto del baúl',       'error'); return; }
     if (!patente)                { showToast('Ingresá la patente',           'error'); return; }
     if (!conductor)              { showToast('Ingresá el nombre del conductor', 'error'); return; }
     if (!dni)                    { showToast('Ingresá el DNI del conductor', 'error'); return; }
@@ -1164,16 +1149,14 @@ async function enviarRegistro() {
       longitud = pos.coords.longitude.toFixed(6);
     } catch(e) {}
 
-    let fotoBase64Patente = '', fotoBase64Baul = '';
-    let nombreFotoPatente = '', nombreFotoBaul = '';
+    let fotoBase64Patente = '';
+    let nombreFotoPatente = '';
 
     if (state.sujeto === 'VEHICULO') {
       const fechaStr = fecha.replace(/\//g, '-');
       const horaStr  = hora.replace(':', '');
       fotoBase64Patente = await blobToBase64(state.photoBlobPatente);
       nombreFotoPatente = `${fechaStr}_${horaStr}_${patente}_patente.jpg`;
-      fotoBase64Baul    = await blobToBase64(state.photoBlobBaul);
-      nombreFotoBaul    = `${fechaStr}_${horaStr}_${patente}_baul.jpg`;
     }
 
     const tipoVehiculo        = state.version === 'extended' ? (state.tipoVehiculo || '') : '';
@@ -1189,7 +1172,6 @@ async function enviarRegistro() {
       tipo: state.tipo, patente, tipoVehiculo, conductor, dni, observaciones: obs,
       latitud, longitud,
       fotoBase64Patente, nombreFotoPatente,
-      fotoBase64Baul,    nombreFotoBaul,
       llave, acompañante, nombresAcompañantes,
     };
 
@@ -1289,7 +1271,6 @@ function limpiarFormulario() {
     z.onclick = () => abrirCamara(target);
   };
   resetZone('photoZonePatente', 'patente', '📷', 'Tocá para sacar foto de la patente');
-  resetZone('photoZoneBaul',    'baul',    '🚗', 'Tocá para sacar foto del baúl');
 
   document.getElementById('patenteInput').value   = '';
   document.getElementById('conductorInput').value = '';
@@ -1306,7 +1287,7 @@ function limpiarFormulario() {
   document.getElementById('camposVehiculo').style.display = 'none';
   document.getElementById('camposPersona').style.display  = 'none';
 
-  state.photoBlobPatente = null; state.photoBlobBaul = null;
+  state.photoBlobPatente = null;
   state.tipo = null; state.sujeto = null;
   state.llave = null; state.acompañante = null; state.tipoVehiculo = null;
 
