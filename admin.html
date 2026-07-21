@@ -373,6 +373,36 @@
   .device-editor.open { display: flex; }
   .device-editor input[type="text"] { background: var(--surface); }
   .editor-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+
+  /* ─── USUARIOS DEL PORTAL ─── */
+  .badge-activo {
+    display: inline-block;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px;
+    background: #e8f5ee; color: var(--green); border: 1px solid #b8e0c8;
+    margin-left: 6px; vertical-align: middle;
+  }
+  .badge-inactivo {
+    display: inline-block;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px;
+    background: #fef2f2; color: var(--danger); border: 1px solid #e0a0a0;
+    margin-left: 6px; vertical-align: middle;
+  }
+  input[type="password"].campo-pass {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="password"].campo-pass:focus { border-color: var(--green); }
+  .device-editor input[type="password"].campo-pass { background: var(--surface); }
+  .hint { font-size: 11px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -434,6 +464,32 @@
   </div>
 
   <div id="dispositivosList"></div>
+
+  <!-- USUARIOS DEL PORTAL DE CLIENTES -->
+  <div class="section-title" style="margin-top:48px;">Usuarios del portal de clientes</div>
+  <div class="fleet-bar">
+    <button class="btn btn-outline" onclick="cargarUsuariosPortal()">↻ Actualizar</button>
+    <button class="btn btn-green" onclick="toggleAddUser()">+ AGREGAR USUARIO</button>
+  </div>
+
+  <div id="addUserForm" class="add-device-form" style="display:none;">
+    <div class="form-field">
+      <div class="form-label">Usuario</div>
+      <input type="text" id="newUserNombre" placeholder="Ej: assalog" autocapitalize="none">
+    </div>
+    <div class="form-field">
+      <div class="form-label">Contraseña</div>
+      <input type="password" class="campo-pass" id="newUserPass" placeholder="Mín. 8 caracteres" autocomplete="new-password">
+    </div>
+    <div class="form-field" style="flex:1.5;">
+      <div class="form-label">Objetivos permitidos</div>
+      <input type="text" id="newUserObjs" placeholder="Ej: ALMACEN_CENTRAL, PLANTA_NORTE" list="objetivosDatalist">
+      <div class="hint">Separá con coma si son varios. Deben coincidir con el nombre exacto del objetivo.</div>
+    </div>
+    <button class="btn btn-green" onclick="agregarUsuarioPortal(this)">+ GUARDAR</button>
+  </div>
+
+  <div id="usuariosPortalList"></div>
 
 </div>
 
@@ -645,6 +701,165 @@ async function guardarDispositivoAdmin(alias, objetivoRaw, puestoRaw, version, b
   }
 }
 
+// ─── USUARIOS DEL PORTAL DE CLIENTES ──────────────────────────
+let userEditActivo = {};
+
+function toggleAddUser() {
+  const f = document.getElementById('addUserForm');
+  f.style.display = (f.style.display === 'none' || !f.style.display) ? 'flex' : 'none';
+}
+
+async function cargarUsuariosPortal() {
+  const cont = document.getElementById('usuariosPortalList');
+  cont.innerHTML = `<div class="loading-msg">Cargando usuarios...</div>`;
+  try {
+    const payload = { token: SECRET_TOKEN, action: 'listarUsuariosPortal' };
+    const resp = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    if (!data.success) { cont.innerHTML = `<div class="empty"><div class="empty-text">Error al cargar los usuarios.</div></div>`; return; }
+    renderUsuariosPortal(data.usuarios || []);
+  } catch(e) {
+    cont.innerHTML = `<div class="empty"><div class="empty-text">No se pudo conectar con el backend.</div></div>`;
+  }
+}
+
+function renderUsuariosPortal(lista) {
+  const cont = document.getElementById('usuariosPortalList');
+  userEditActivo = {};
+
+  if (!lista.length) {
+    cont.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">👤</div>
+        <div class="empty-text">No hay usuarios del portal todavía.<br>Agregá el primero con el botón de arriba.</div>
+      </div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map((u, i) => {
+    userEditActivo[i] = u.activo ? 'SI' : 'NO';
+    const badge = u.activo
+      ? `<span class="badge-activo">Activo</span>`
+      : `<span class="badge-inactivo">Inactivo</span>`;
+    const userEnc = encodeURIComponent(u.usuario);
+    const objsEsc = (u.objetivos || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+    return `
+      <div class="device-card">
+        <div class="device-head">
+          <div class="device-main">
+            <div class="device-alias">👤 ${u.usuario}</div>
+            <div class="device-assign">Objetivos: ${objsEsc || '—'} ${badge}</div>
+          </div>
+          <div class="device-actions">
+            <button class="btn btn-outline" onclick="toggleUserEditor(${i})">Editar</button>
+            <button class="btn btn-delete" onclick="eliminarUsuarioPortal('${userEnc}', this)">Eliminar</button>
+          </div>
+        </div>
+        <div class="device-editor" id="userEditor_${i}">
+          <div class="editor-row">
+            <div class="form-field" style="flex:1.5;">
+              <div class="form-label">Objetivos permitidos</div>
+              <input type="text" id="userObjs_${i}" value="${objsEsc}" list="objetivosDatalist">
+            </div>
+            <div class="form-field">
+              <div class="form-label">Nueva contraseña</div>
+              <input type="password" class="campo-pass" id="userPass_${i}" placeholder="Vacío = no cambiar" autocomplete="new-password">
+            </div>
+            <div class="form-field" style="flex:0 0 auto;">
+              <div class="form-label">Estado</div>
+              <div class="version-toggle">
+                <button id="userActSi_${i}" class="${userEditActivo[i]==='SI' ? 'active-basica' : ''}" onclick="setUserActivo(${i},'SI')">Activo</button>
+                <button id="userActNo_${i}" class="${userEditActivo[i]==='NO' ? 'active-extended' : ''}" onclick="setUserActivo(${i},'NO')">Inactivo</button>
+              </div>
+            </div>
+          </div>
+          <div class="hint">La contraseña nunca se muestra. Si el cliente la olvidó, escribí una nueva acá y se resetea.</div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-green" onclick="guardarEdicionUsuario(${i}, '${userEnc}', this)">GUARDAR</button>
+            <button class="btn btn-outline" onclick="toggleUserEditor(${i})">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleUserEditor(i) {
+  document.getElementById(`userEditor_${i}`).classList.toggle('open');
+}
+
+function setUserActivo(i, v) {
+  userEditActivo[i] = v;
+  document.getElementById(`userActSi_${i}`).className = v === 'SI' ? 'active-basica'   : '';
+  document.getElementById(`userActNo_${i}`).className = v === 'NO' ? 'active-extended' : '';
+}
+
+async function guardarUsuarioPortalApi(payloadExtra, btnEl) {
+  let prev;
+  if (btnEl) { prev = btnEl.textContent; btnEl.disabled = true; btnEl.textContent = 'Guardando...'; }
+  try {
+    const payload = Object.assign({ token: SECRET_TOKEN, action: 'guardarUsuarioPortal' }, payloadExtra);
+    const resp = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    if (!data.success) { alert('Error al guardar: ' + (data.error || '')); return false; }
+    await cargarUsuariosPortal();
+    return true;
+  } catch(e) {
+    alert('No se pudo conectar con el backend');
+    return false;
+  } finally {
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = prev; }
+  }
+}
+
+async function agregarUsuarioPortal(btn) {
+  const usuario = document.getElementById('newUserNombre').value.trim().toLowerCase();
+  const pass    = document.getElementById('newUserPass').value;
+  const objs    = document.getElementById('newUserObjs').value.trim();
+  if (!usuario) { alert('Falta el nombre de usuario'); return; }
+  if (!pass || pass.length < 8) { alert('La contraseña debe tener al menos 8 caracteres'); return; }
+  if (!objs)    { alert('Asigná al menos un objetivo'); return; }
+
+  const ok = await guardarUsuarioPortalApi({ usuario, password: pass, objetivos: objs, activo: 'SI' }, btn);
+  if (ok) {
+    document.getElementById('newUserNombre').value = '';
+    document.getElementById('newUserPass').value = '';
+    document.getElementById('newUserObjs').value = '';
+    document.getElementById('addUserForm').style.display = 'none';
+  }
+}
+
+async function guardarEdicionUsuario(i, userEnc, btn) {
+  const usuario = decodeURIComponent(userEnc);
+  const objs = document.getElementById(`userObjs_${i}`).value.trim();
+  const pass = document.getElementById(`userPass_${i}`).value;
+  if (!objs) { alert('Asigná al menos un objetivo'); return; }
+  if (pass && pass.length < 8) { alert('La nueva contraseña debe tener al menos 8 caracteres'); return; }
+  await guardarUsuarioPortalApi({ usuario, password: pass, objetivos: objs, activo: userEditActivo[i] || 'SI' }, btn);
+}
+
+async function eliminarUsuarioPortal(userEnc, btn) {
+  const usuario = decodeURIComponent(userEnc);
+  const ok = confirm(
+    `¿Eliminar el usuario del portal "${usuario}"?\n\n` +
+    `Dejará de poder ingresar al portal de inmediato. Esta acción no borra ningún registro de accesos.`
+  );
+  if (!ok) return;
+
+  const prev = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Eliminando...';
+  try {
+    const payload = { token: SECRET_TOKEN, action: 'eliminarUsuarioPortal', usuario };
+    const resp = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const data = await resp.json();
+    if (!data.success) { alert('Error al eliminar: ' + (data.error || '')); btn.disabled = false; btn.textContent = prev; return; }
+    await cargarUsuariosPortal();
+  } catch(e) {
+    alert('No se pudo conectar con el backend');
+    btn.disabled = false; btn.textContent = prev;
+  }
+}
+
 // ─── LOGIN ────────────────────────────────────────────────────
 const PASSWORD = 'Spartan2024';
 
@@ -654,6 +869,7 @@ function verificarPassword() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminContent').style.display = 'block';
     cargarDispositivos();
+    cargarUsuariosPortal();
   } else {
     document.getElementById('loginError').style.display = 'block';
     document.getElementById('passwordInput').value = '';
