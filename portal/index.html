@@ -74,14 +74,18 @@
   .segmentado button.activo{background:var(--verde-700);color:var(--blanco)}
   .segmentado button.activo.mov-egr{background:var(--ambar);color:#4a3600}
 
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-  .card{border:1px solid var(--linea);border-radius:10px;padding:14px 16px;background:var(--verde-50)}
-  .card .k{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gris)}
-  .card .v{font-family:'Archivo';font-weight:800;font-size:30px;line-height:1.05;margin-top:4px;color:var(--verde-700)}
-  .card .v small{font-family:'JetBrains Mono';font-weight:500;font-size:15px;color:var(--gris)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;align-items:start}
+  .card{border:1px solid var(--linea);border-radius:10px;padding:10px 12px;background:var(--verde-50)}
+  .card .k{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gris)}
+  .card .v{font-family:'Archivo';font-weight:800;font-size:22px;line-height:1.05;margin-top:3px;color:var(--verde-700)}
+  .card .extra{font-family:'JetBrains Mono';font-size:12px;color:var(--gris);margin-top:2px}
   .card.destac{background:var(--verde-700)}
   .card.destac .k{color:var(--verde-100)}
   .card.destac .v{color:var(--blanco)}
+  .card.destac .extra{color:var(--verde-100)}
+  .card .subs{margin-top:7px;border-top:1px dashed var(--linea);padding-top:6px}
+  .card .sub{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--gris);line-height:1.7}
+  .card .sub b{font-family:'JetBrains Mono';font-weight:600;color:var(--verde-700)}
 
   /* Gráfico horas apilado y clickeable */
   .horas{margin-top:18px}
@@ -437,13 +441,17 @@ function descripcionFiltros(res){
 function pintarResumen(res){
   const d = res.resumen;
   $('lblResumen').textContent = descripcionFiltros(res);
+  const pv = d.porVeh || null;
+  const subsVeh = pv ? [['Autos',pv.auto],['Camiones',pv.camion],['Cubas',pv.cubas]]
+                        .concat(pv.sinDato>0 ? [['Sin dato',pv.sinDato]] : [])
+                     : null;
   $('cards').innerHTML = [
-    tarjeta('Total registros', d.totReg, true),
+    tarjeta('Total registros', d.totReg, {destac:true}),
     tarjeta('Ingresos', d.totIng),
     tarjeta('Egresos', d.totEgr),
-    tarjeta('Vehículos', d.totVeh),
+    tarjeta('Vehículos', d.totVeh, {subs:subsVeh}),
     tarjeta('Personas', d.totPer),
-    tarjeta('Pico horario', d.pico.hora, false, d.pico.cant+' reg.')
+    tarjeta('Pico horario', d.pico.hora, {extra:d.pico.cant+' registros'})
   ].join('');
 
   const activas = (d.horas||[]).filter(h=>h.cant>0);
@@ -467,9 +475,15 @@ function pintarResumen(res){
     $('bloqueHoras').classList.add('oculto');
   }
 }
-function tarjeta(k,v,destac,extra){
-  return '<div class="card'+(destac?' destac':'')+'"><div class="k">'+k+'</div>'+
-         '<div class="v">'+v+(extra?' <small>'+extra+'</small>':'')+'</div></div>';
+function tarjeta(k, v, opts){
+  opts = opts || {};
+  let html = '<div class="card'+(opts.destac?' destac':'')+'"><div class="k">'+k+'</div>'+
+             '<div class="v">'+v+'</div>';
+  if(opts.extra) html += '<div class="extra">'+opts.extra+'</div>';
+  if(opts.subs && opts.subs.length){
+    html += '<div class="subs">'+opts.subs.map(s=>'<div class="sub"><span>'+s[0]+'</span><b>'+s[1]+'</b></div>').join('')+'</div>';
+  }
+  return html+'</div>';
 }
 
 function pintarDetalle(res){
@@ -532,6 +546,8 @@ function descargarCsv(){
   a.download = 'spartan_accesos_'+obj+'_'+$('fDesde').value+'_'+$('fHasta').value+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  // Aviso de uso al backend (best effort: si falla, la descarga ya salió igual)
+  api({ action:'evento', tipo:'descarga', token:TOKEN }).catch(()=>{});
 }
 
 /* ─── Eventos ─── */
