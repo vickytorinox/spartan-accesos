@@ -394,9 +394,9 @@
   <div id="campoTipoVeh" style="display:none;" class="field-group">
     <div class="field-label">🚗 Tipo de vehículo</div>
     <div class="tipo-selector tipo-selector-3">
-      <button type="button" class="tipo-btn" id="btnVehAuto"     onclick="seleccionarTipoVehiculo('AUTO')">AUTO</button>
-      <button type="button" class="tipo-btn" id="btnVehCisterna" onclick="seleccionarTipoVehiculo('CISTERNA')">CISTERNA</button>
       <button type="button" class="tipo-btn" id="btnVehCamion"   onclick="seleccionarTipoVehiculo('CAMION')">CAMIÓN</button>
+      <button type="button" class="tipo-btn" id="btnVehAuto"     onclick="seleccionarTipoVehiculo('AUTO')">AUTO</button>
+      <button type="button" class="tipo-btn" id="btnVehCisterna" onclick="seleccionarTipoVehiculo('CUBAS')">CUBAS</button>
     </div>
   </div>
 
@@ -981,7 +981,7 @@ function seleccionarTipo(tipo) {
 function seleccionarTipoVehiculo(opcion) {
   state.tipoVehiculo = opcion;
   document.getElementById('btnVehAuto').className     = 'tipo-btn' + (opcion === 'AUTO'     ? ' selected-ingreso' : '');
-  document.getElementById('btnVehCisterna').className = 'tipo-btn' + (opcion === 'CISTERNA' ? ' selected-ingreso' : '');
+  document.getElementById('btnVehCisterna').className = 'tipo-btn' + (opcion === 'CUBAS'    ? ' selected-ingreso' : '');
   document.getElementById('btnVehCamion').className   = 'tipo-btn' + (opcion === 'CAMION'   ? ' selected-ingreso' : '');
 }
 
