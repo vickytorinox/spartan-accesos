@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spartan · Portal de accesos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde-900:#0d3b21; --verde-700:#145A32; --verde-500:#1E7145;
+    --verde-100:#D5F5E3; --verde-50:#eef9f2;
+    --tinta:#12211a; --gris:#5c6b62; --linea:#d7e4db; --papel:#f6faf7; --blanco:#fff;
+    --ambar:#e8a33d; --ambar-suave:#fff4d6; --rojo:#b32338;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--tinta);background:var(--papel);-webkit-font-smoothing:antialiased;min-height:100vh}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+  .oculto{display:none !important}
+
+  /* LOGIN */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 80% at 50% -10%, var(--verde-100) 0%, transparent 60%),var(--papel)}
+  .login-card{width:100%;max-width:400px;background:var(--blanco);border:1px solid var(--linea);
+    border-radius:14px;box-shadow:0 18px 50px -24px rgba(13,59,33,.35);overflow:hidden}
+  .login-top{background:var(--verde-700);color:var(--blanco);padding:26px 28px 22px}
+  .marca{font-family:'Archivo';font-weight:800;letter-spacing:.14em;font-size:13px;text-transform:uppercase;opacity:.85}
+  .login-top h1{font-family:'Archivo';font-weight:700;font-size:23px;margin:6px 0 2px;letter-spacing:-.01em}
+  .login-top p{margin:0;font-size:13px;opacity:.8}
+  .login-body{padding:24px 28px 28px}
+  label.campo{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--gris);margin:0 0 6px}
+  input,select{width:100%;font-family:inherit;font-size:15px;padding:11px 12px;border:1px solid var(--linea);
+    border-radius:9px;background:var(--blanco);color:var(--tinta);outline:none;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus{border-color:var(--verde-500);box-shadow:0 0 0 3px rgba(30,113,69,.14)}
+  .campo-grupo{margin-bottom:16px}
+  button{font-family:'Archivo';font-weight:700;cursor:pointer;border:none;border-radius:9px;transition:filter .15s,opacity .15s}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  .btn-primario{width:100%;background:var(--verde-700);color:var(--blanco);font-size:15px;padding:12px;letter-spacing:.02em}
+  .btn-primario:hover:not(:disabled){filter:brightness(1.08)}
+  .aviso{font-size:13px;padding:10px 12px;border-radius:8px;margin-bottom:14px;display:none;line-height:1.4}
+  .aviso.error{display:block;background:#fdeaed;color:var(--rojo);border:1px solid #f4c6ce}
+  .pie-login{text-align:center;font-size:11px;color:var(--gris);padding:14px;border-top:1px solid var(--linea)}
+
+  /* APP */
+  header.barra{background:var(--verde-700);color:var(--blanco);padding:14px 22px;display:flex;
+    align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  header.barra .izq{display:flex;align-items:baseline;gap:12px}
+  header.barra .usuario{font-size:13px;opacity:.85}
+  header.barra .usuario b{font-weight:600}
+  .btn-salir{background:rgba(255,255,255,.14);color:var(--blanco);font-size:13px;padding:8px 14px}
+  .btn-salir:hover{background:rgba(255,255,255,.24)}
+
+  main{max-width:1200px;margin:0 auto;padding:22px}
+  .panel{background:var(--blanco);border:1px solid var(--linea);border-radius:12px;margin-bottom:20px;overflow:hidden}
+  .panel-cab{padding:12px 18px;border-bottom:1px solid var(--linea);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .panel-cab h2{font-family:'Archivo';font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--verde-700);margin:0}
+  .panel-cuerpo{padding:18px}
+
+  .filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+  .filtros .campo-grupo{margin:0}
+  .filtros .acciones{display:flex;gap:10px;grid-column:1/-1}
+  .btn-buscar{background:var(--verde-500);color:var(--blanco);font-size:14px;padding:11px 22px}
+  .btn-buscar:hover:not(:disabled){filter:brightness(1.08)}
+  .btn-csv{background:var(--verde-100);color:var(--verde-900);font-size:14px;padding:11px 18px}
+  .btn-csv:hover:not(:disabled){filter:brightness(.97)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .card{border:1px solid var(--linea);border-radius:10px;padding:14px 16px;background:var(--verde-50)}
+  .card .k{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gris)}
+  .card .v{font-family:'Archivo';font-weight:800;font-size:30px;line-height:1.05;margin-top:4px;color:var(--verde-700)}
+  .card .v small{font-family:'JetBrains Mono';font-weight:500;font-size:15px;color:var(--gris)}
+  .card.destac{background:var(--verde-700)}
+  .card.destac .k{color:var(--verde-100)}
+  .card.destac .v{color:var(--blanco)}
+
+  /* Gráfico horas apilado */
+  .horas{margin-top:18px}
+  .horas .titulo-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .horas .titulo{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gris)}
+  .leyenda{display:flex;gap:14px;font-size:12px;color:var(--gris)}
+  .leyenda span{display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .sw-ing{background:var(--verde-500)}
+  .sw-egr{background:var(--ambar)}
+  .fila-hora{display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:4px}
+  .fila-hora .hh{width:46px;color:var(--gris);font-family:'JetBrains Mono';flex-shrink:0}
+  .barra-cont{display:flex;height:14px;border-radius:3px;overflow:hidden;background:var(--verde-50);min-width:2px}
+  .seg-ing{background:var(--verde-500);height:100%}
+  .seg-egr{background:var(--ambar);height:100%}
+  .fila-hora .n{color:var(--gris);font-family:'JetBrains Mono';flex-shrink:0}
+  .fila-hora .n b{color:var(--tinta)}
+
+  .tabla-wrap{overflow-x:auto;border:1px solid var(--linea);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:940px}
+  thead th{background:var(--verde-50);color:var(--verde-700);font-family:'Archivo';font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;font-size:11px;text-align:left;padding:10px 12px;
+    border-bottom:2px solid var(--verde-100);position:sticky;top:0}
+  tbody td{padding:9px 12px;border-bottom:1px solid var(--linea);white-space:nowrap}
+  tbody tr:nth-child(even){background:var(--papel)}
+  td.dato{font-family:'JetBrains Mono'}
+  .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;font-family:'Archivo';letter-spacing:.03em}
+  .badge.ing{background:var(--verde-100);color:var(--verde-900)}
+  .badge.egr{background:var(--ambar-suave);color:#7a5b00}
+  .badge-veh{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;font-family:'Archivo';letter-spacing:.03em;background:#eef1ef;color:#3a4a41}
+
+  /* Fotos */
+  .btn-foto{background:var(--verde-50);border:1px solid var(--linea);color:var(--verde-700);
+    font-family:'Inter';font-weight:600;font-size:11px;padding:5px 9px;border-radius:7px}
+  .btn-foto:hover{background:var(--verde-100)}
+  .sin-foto{color:var(--gris);opacity:.5}
+  .visor{position:fixed;inset:0;background:rgba(13,33,22,.72);display:none;
+    align-items:center;justify-content:center;padding:20px;z-index:50}
+  .visor.abierto{display:flex}
+  .visor-panel{background:var(--blanco);border-radius:14px;max-width:min(92vw,860px);
+    max-height:90vh;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 24px 70px -20px rgba(0,0,0,.5)}
+  .visor-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 16px;border-bottom:1px solid var(--linea);background:var(--verde-50)}
+  .visor-titulo{font-family:'Archivo';font-weight:700;font-size:13px;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--verde-700)}
+  .visor-cerrar{background:transparent;color:var(--gris);font-size:16px;padding:4px 10px;border-radius:6px}
+  .visor-cerrar:hover{background:var(--verde-100);color:var(--verde-900)}
+  .visor-cuerpo{overflow:auto;display:flex;align-items:center;justify-content:center;min-height:180px}
+  .visor-cuerpo img{max-width:100%;max-height:80vh;display:block}
+  .visor-cargando{padding:40px;color:var(--gris);font-size:14px}
+
+  .vacio{padding:34px 18px;text-align:center;color:var(--gris);font-size:14px}
+  .conteo{font-size:13px;color:var(--gris)}
+  .tope-aviso{background:var(--ambar-suave);color:#7a5b00;font-size:12px;padding:8px 14px;border-radius:8px;margin-top:10px}
+
+  @media (max-width:640px){main{padding:14px}header.barra{padding:12px 16px}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<section id="login">
+  <div class="login-card">
+    <div class="login-top">
+      <div class="marca">SG Seguridad · Spartan</div>
+      <h1>Portal de accesos</h1>
+      <p>Consultá los registros de tus objetivos.</p>
+    </div>
+    <div class="login-body">
+      <div id="avisoLogin" class="aviso"></div>
+      <div class="campo-grupo">
+        <label class="campo" for="usuario">Usuario</label>
+        <input id="usuario" type="text" autocomplete="username" autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="campo-grupo">
+        <label class="campo" for="password">Contraseña</label>
+        <input id="password" type="password" autocomplete="current-password">
+      </div>
+      <button id="btnLogin" class="btn-primario">Ingresar</button>
+    </div>
+    <div class="pie-login">Acceso exclusivo para clientes autorizados</div>
+  </div>
+</section>
+
+<!-- ══ APP ══ -->
+<div id="app" class="oculto">
+  <header class="barra">
+    <div class="izq"><span class="marca">SPARTAN · ACCESOS</span></div>
+    <div class="izq">
+      <span class="usuario">Sesión: <b id="lblUsuario"></b></span>
+      <button class="btn-salir" id="btnSalir">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Filtros unificados -->
+    <div class="panel">
+      <div class="panel-cab"><h2>Filtros</h2></div>
+      <div class="panel-cuerpo">
+        <div class="filtros">
+          <div class="campo-grupo">
+            <label class="campo" for="fObjetivo">Objetivo</label>
+            <select id="fObjetivo"></select>
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fDesde">Desde</label>
+            <input id="fDesde" type="date">
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fHasta">Hasta</label>
+            <input id="fHasta" type="date">
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fTipoVeh">Tipo de vehículo</label>
+            <select id="fTipoVeh">
+              <option value="">Todos</option>
+              <option value="AUTO">Auto</option>
+              <option value="CAMION">Camión</option>
+              <option value="CUBAS">Cubas</option>
+            </select>
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fPatente">Patente</label>
+            <input id="fPatente" type="text" placeholder="Opcional" autocapitalize="characters">
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fConductor">Conductor</label>
+            <input id="fConductor" type="text" placeholder="Nombre o apellido">
+          </div>
+          <div class="acciones">
+            <button class="btn-buscar" id="btnBuscar">Buscar</button>
+            <button class="btn-csv" id="btnCsv" disabled>Descargar CSV</button>
+          </div>
+        </div>
+        <div id="avisoApp" class="aviso" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="panel">
+      <div class="panel-cab">
+        <h2>Resumen</h2>
+        <span class="conteo" id="lblResumen">—</span>
+      </div>
+      <div class="panel-cuerpo">
+        <div class="cards" id="cards">
+          <div class="vacio">Elegí objetivo y fechas, y tocá Buscar.</div>
+        </div>
+        <div class="horas oculto" id="bloqueHoras">
+          <div class="titulo-row">
+            <div class="titulo">Actividad por hora</div>
+            <div class="leyenda">
+              <span><i class="swatch sw-ing"></i>Ingresos</span>
+              <span><i class="swatch sw-egr"></i>Egresos</span>
+            </div>
+          </div>
+          <div id="listaHoras"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalle -->
+    <div class="panel">
+      <div class="panel-cab">
+        <h2>Detalle</h2>
+        <span class="conteo" id="lblDetalle"></span>
+      </div>
+      <div class="panel-cuerpo">
+        <div class="tabla-wrap">
+          <table id="tabla">
+            <thead id="thead"></thead>
+            <tbody id="tbody"><tr><td class="vacio">Sin resultados todavía.</td></tr></tbody>
+          </table>
+        </div>
+        <div id="topeAviso" class="tope-aviso oculto"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Visor de fotos -->
+  <div id="visorFoto" class="visor" onclick="if(event.target===this) cerrarFoto()">
+    <div class="visor-panel">
+      <div class="visor-cab">
+        <span id="visorTitulo" class="visor-titulo">Foto</span>
+        <button class="visor-cerrar" onclick="cerrarFoto()" aria-label="Cerrar">✕</button>
+      </div>
+      <div id="visorCuerpo" class="visor-cuerpo"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   CONFIG — URL del backend DEL PORTAL (termina en /exec)
+   ══════════════════════════════════════════════════════════════════ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwUUI8zL4PzPILtcn-82RTYBy9pZ25kUZzQkQBQfmD421tlnuRULe_sfKccWbu6A8RbDQ/exec';
+
+let TOKEN = null;
+let ULTIMO_DETALLE = null; // { columnas, filas } para exportar CSV
+let FOTOS_FILAS = [];      // paralela a filas: { p: idFotoPatente }
+const FOTO_CACHE = {};     // fileId -> dataURL (evita repedir la misma foto)
+
+const $ = (id) => document.getElementById(id);
+
+async function api(payload){
+  // text/plain evita el preflight CORS con Apps Script
+  const r = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
+  return r.json();
+}
+
+const ERRORES = {
+  faltan_datos:'Completá usuario y contraseña.',
+  credenciales:'Usuario o contraseña incorrectos.',
+  bloqueado:'Demasiados intentos fallidos. Esperá unos minutos e intentá de nuevo.',
+  sesion_invalida:'Tu sesión expiró. Ingresá de nuevo.',
+  sin_acceso:'No tenés acceso a ese objetivo.',
+  rango_invalido:'Revisá el rango de fechas.',
+  error_servidor:'Hubo un problema al procesar la consulta. Probá otra vez.',
+  accion_desconocida:'Acción no reconocida.',
+  foto_invalida:'No se pudo cargar la foto.',
+  foto_no_encontrada:'La foto no está disponible.',
+  foto_no_autorizada:'La foto no está disponible.',
+  foto_muy_grande:'La foto es demasiado grande para mostrarla.'
+};
+const msgError = (c) => ERRORES[c] || 'No se pudo completar la operación.';
+const mostrarAviso = (el,t) => { el.textContent=t; el.className='aviso error'; };
+const limpiarAviso = (el) => { el.textContent=''; el.className='aviso'; };
+
+/* ─── Login ─── */
+async function hacerLogin(){
+  limpiarAviso($('avisoLogin'));
+  const usuario = $('usuario').value.trim(), password = $('password').value;
+  if(!usuario || !password){ mostrarAviso($('avisoLogin'),'Completá usuario y contraseña.'); return; }
+  $('btnLogin').disabled = true; $('btnLogin').textContent = 'Ingresando…';
+  try{
+    const res = await api({ action:'login', usuario, password });
+    if(!res.ok){ mostrarAviso($('avisoLogin'), msgError(res.error)); return; }
+    TOKEN = res.token;
+    sessionStorage.setItem('spartan_portal', JSON.stringify({ token:res.token, usuario:res.usuario, objetivos:res.objetivos }));
+    entrarApp(res.usuario, res.objetivos);
+  }catch(e){
+    mostrarAviso($('avisoLogin'),'No se pudo conectar con el servidor. Revisá tu conexión.');
+  }finally{
+    $('btnLogin').disabled = false; $('btnLogin').textContent = 'Ingresar';
+  }
+}
+
+function entrarApp(usuario, objetivos){
+  $('login').classList.add('oculto');
+  $('app').classList.remove('oculto');
+  $('lblUsuario').textContent = usuario;
+
+  const sel = $('fObjetivo'); sel.innerHTML = '';
+  if((objetivos||[]).length > 1){
+    const o = document.createElement('option'); o.value='(todos)'; o.textContent='Todos mis objetivos'; sel.appendChild(o);
+  }
+  (objetivos||[]).forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; sel.appendChild(o); });
+
+  const hoy = new Date();
+  const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  $('fDesde').value = primero.toISOString().slice(0,10);
+  $('fHasta').value = hoy.toISOString().slice(0,10);
+}
+
+function salir(){
+  TOKEN = null; ULTIMO_DETALLE = null; FOTOS_FILAS = [];
+  sessionStorage.removeItem('spartan_portal');
+  $('app').classList.add('oculto');
+  $('login').classList.remove('oculto');
+  $('password').value='';
+}
+
+/* ─── Buscar (una sola consulta unificada) ─── */
+async function buscar(){
+  limpiarAviso($('avisoApp'));
+  $('btnBuscar').disabled = true; $('btnBuscar').textContent = 'Buscando…';
+  try{
+    const res = await api({
+      action:'consulta', token:TOKEN,
+      objetivo:$('fObjetivo').value,
+      desde:$('fDesde').value, hasta:$('fHasta').value,
+      tipoVehiculo:$('fTipoVeh').value,
+      patente:$('fPatente').value.trim(),
+      conductor:$('fConductor').value.trim()
+    });
+    if(res.error==='sesion_invalida'){ salir(); mostrarAviso($('avisoLogin'), msgError('sesion_invalida')); return; }
+    if(!res.ok){
+      mostrarAviso($('avisoApp'), msgError(res.error));
+      $('cards').innerHTML = '<div class="vacio">'+msgError(res.error)+'</div>';
+      $('bloqueHoras').classList.add('oculto');
+      $('lblResumen').textContent='—'; $('lblDetalle').textContent='';
+      $('thead').innerHTML=''; $('tbody').innerHTML='<tr><td class="vacio">'+msgError(res.error)+'</td></tr>';
+      $('btnCsv').disabled = true; ULTIMO_DETALLE = null; FOTOS_FILAS = [];
+      return;
+    }
+    pintarResumen(res);
+    pintarDetalle(res);
+  }catch(e){
+    mostrarAviso($('avisoApp'),'No se pudo conectar con el servidor.');
+  }finally{
+    $('btnBuscar').disabled = false; $('btnBuscar').textContent = 'Buscar';
+  }
+}
+
+function etiquetaObjetivo(res){
+  return (res.objetivos.length>1 ? res.objetivos.length+' objetivos' : res.objetivos[0]);
+}
+
+function pintarResumen(res){
+  const d = res.resumen;
+  $('lblResumen').textContent = res.rango.desde+' → '+res.rango.hasta+' · '+etiquetaObjetivo(res);
+  $('cards').innerHTML = [
+    tarjeta('Total registros', d.totReg, true),
+    tarjeta('Ingresos', d.totIng),
+    tarjeta('Egresos', d.totEgr),
+    tarjeta('Vehículos', d.totVeh),
+    tarjeta('Personas', d.totPer),
+    tarjeta('Pico horario', d.pico.hora, false, d.pico.cant+' reg.')
+  ].join('');
+
+  const activas = (d.horas||[]).filter(h=>h.cant>0);
+  if(activas.length){
+    const max = Math.max.apply(null, activas.map(h=>h.cant));
+    const anchoMax = 300; // px
+    $('listaHoras').innerHTML = activas.map(h=>{
+      const wTotal = Math.max(2, Math.round((h.cant/max)*anchoMax));
+      const wIng = h.cant ? Math.round((h.ing/h.cant)*wTotal) : 0;
+      const wEgr = wTotal - wIng;
+      return '<div class="fila-hora"><span class="hh">'+h.hora+'</span>'+
+             '<span class="barra-cont" style="width:'+wTotal+'px">'+
+               (wIng>0?'<span class="seg-ing" style="width:'+wIng+'px"></span>':'')+
+               (wEgr>0?'<span class="seg-egr" style="width:'+wEgr+'px"></span>':'')+
+             '</span>'+
+             '<span class="n"><b>'+h.cant+'</b> ('+h.ing+'/'+h.egr+')</span></div>';
+    }).join('');
+    $('bloqueHoras').classList.remove('oculto');
+  }else{
+    $('bloqueHoras').classList.add('oculto');
+  }
+}
+function tarjeta(k,v,destac,extra){
+  return '<div class="card'+(destac?' destac':'')+'"><div class="k">'+k+'</div>'+
+         '<div class="v">'+v+(extra?' <small>'+extra+'</small>':'')+'</div></div>';
+}
+
+function pintarDetalle(res){
+  const cols = res.columnas, filas = res.filas, fotos = res.fotos || [];
+  ULTIMO_DETALLE = { columnas:cols, filas:filas };   // CSV: solo datos, sin fotos
+  FOTOS_FILAS = fotos;
+  $('thead').innerHTML = '<tr>'+cols.map(c=>'<th>'+etiquetaCol(c)+'</th>').join('')+'<th>Foto</th></tr>';
+  $('lblDetalle').textContent = res.total + (res.total===1?' registro':' registros');
+
+  if(!filas.length){
+    $('tbody').innerHTML = '<tr><td class="vacio" colspan="'+(cols.length+1)+'">No hay movimientos con esos filtros.</td></tr>';
+  }else{
+    const iTipo = cols.indexOf('Tipo');
+    const iVeh  = cols.indexOf('TipoVehiculo');
+    const datoCols = ['Fecha','Hora','Patente','DNI','CUIL'].map(c=>cols.indexOf(c));
+    $('tbody').innerHTML = filas.map((f,fi)=>{
+      const celdas = f.map((celda,i)=>{
+        if(i===iTipo){
+          const t=(celda||'').toString().toUpperCase();
+          const cls = t.indexOf('EGRESO')>=0 ? 'egr':'ing';
+          return '<td><span class="badge '+cls+'">'+escHtml(celda)+'</span></td>';
+        }
+        if(i===iVeh && celda){
+          return '<td><span class="badge-veh">'+escHtml(celda)+'</span></td>';
+        }
+        const cls = datoCols.indexOf(i)>=0 ? ' class="dato"' : '';
+        return '<td'+cls+'>'+escHtml(celda)+'</td>';
+      }).join('');
+      const ft = fotos[fi] || {};
+      const boton = ft.p
+        ? '<button class="btn-foto" onclick="abrirFoto(\''+ft.p+'\')">📷 Patente</button>'
+        : '<span class="sin-foto">—</span>';
+      return '<tr>'+celdas+'<td>'+boton+'</td></tr>';
+    }).join('');
+  }
+  $('btnCsv').disabled = filas.length===0;
+  if(res.tope){
+    $('topeAviso').textContent = 'Se muestran los primeros '+res.total+' registros. Acotá el rango de fechas para ver el resto.';
+    $('topeAviso').classList.remove('oculto');
+  }else{
+    $('topeAviso').classList.add('oculto');
+  }
+}
+function etiquetaCol(c){ return c==='TipoVehiculo' ? 'Tipo veh.' : c; }
+function escHtml(s){
+  return (s===null||s===undefined?'':s.toString()).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ─── Visor de fotos (pasa por el backend, Drive queda privado) ─── */
+async function abrirFoto(fileId){
+  $('visorTitulo').textContent = 'Foto · Patente';
+  $('visorCuerpo').innerHTML = '<div class="visor-cargando">Cargando foto…</div>';
+  $('visorFoto').classList.add('abierto');
+
+  if(FOTO_CACHE[fileId]){
+    $('visorCuerpo').innerHTML = '<img src="'+FOTO_CACHE[fileId]+'" alt="Foto del registro">';
+    return;
+  }
+  try{
+    const res = await api({ action:'verFoto', token:TOKEN, fileId });
+    if(res.error==='sesion_invalida'){ cerrarFoto(); salir(); mostrarAviso($('avisoLogin'), msgError('sesion_invalida')); return; }
+    if(!res.ok){
+      $('visorCuerpo').innerHTML = '<div class="visor-cargando">'+msgError(res.error)+'</div>';
+      return;
+    }
+    const dataUrl = 'data:'+res.mime+';base64,'+res.data;
+    FOTO_CACHE[fileId] = dataUrl;
+    $('visorCuerpo').innerHTML = '<img src="'+dataUrl+'" alt="Foto del registro">';
+  }catch(e){
+    $('visorCuerpo').innerHTML = '<div class="visor-cargando">No se pudo conectar con el servidor.</div>';
+  }
+}
+function cerrarFoto(){
+  $('visorFoto').classList.remove('abierto');
+  $('visorCuerpo').innerHTML = '';
+}
+
+/* ─── CSV (blindaje anti-inyección de fórmulas) ─── */
+function celdaCsv(v){
+  let s = (v===null||v===undefined?'':v.toString());
+  if(/^[=+\-@]/.test(s)) s = "'"+s;
+  if(/[",\n;]/.test(s)) s = '"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function descargarCsv(){
+  if(!ULTIMO_DETALLE || !ULTIMO_DETALLE.filas.length) return;
+  const { columnas, filas } = ULTIMO_DETALLE;
+  const lineas = [ columnas.map(celdaCsv).join(',') ];
+  filas.forEach(f=> lineas.push(f.map(celdaCsv).join(',')) );
+  const blob = new Blob(['\ufeff'+lineas.join('\r\n')], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const obj = $('fObjetivo').value.replace(/[^a-zA-Z0-9]+/g,'_');
+  a.href = url;
+  a.download = 'spartan_accesos_'+obj+'_'+$('fDesde').value+'_'+$('fHasta').value+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ─── Eventos ─── */
+$('btnLogin').addEventListener('click', hacerLogin);
+$('password').addEventListener('keydown', e=>{ if(e.key==='Enter') hacerLogin(); });
+$('usuario').addEventListener('keydown', e=>{ if(e.key==='Enter') $('password').focus(); });
+$('btnSalir').addEventListener('click', salir);
+$('btnBuscar').addEventListener('click', buscar);
+$('btnCsv').addEventListener('click', descargarCsv);
+
+/* ─── Restaurar sesión de esta pestaña ─── */
+(function(){
+  const g = sessionStorage.getItem('spartan_portal');
+  if(g){ try{ const s=JSON.parse(g); if(s&&s.token){ TOKEN=s.token; entrarApp(s.usuario, s.objetivos); } }catch(e){} }
+})();
+</script>
+</body>
+</html>
