@@ -17,7 +17,6 @@
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{font-family:'Inter',system-ui,sans-serif;color:var(--tinta);background:var(--papel);-webkit-font-smoothing:antialiased;min-height:100vh}
-  .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
   .oculto{display:none !important}
 
   /* LOGIN */
@@ -35,7 +34,7 @@
     border-radius:9px;background:var(--blanco);color:var(--tinta);outline:none;transition:border-color .15s,box-shadow .15s}
   input:focus,select:focus{border-color:var(--verde-500);box-shadow:0 0 0 3px rgba(30,113,69,.14)}
   .campo-grupo{margin-bottom:16px}
-  button{font-family:'Archivo';font-weight:700;cursor:pointer;border:none;border-radius:9px;transition:filter .15s,opacity .15s}
+  button{font-family:'Archivo';font-weight:700;cursor:pointer;border:none;border-radius:9px;transition:filter .15s,opacity .15s,background .15s}
   button:disabled{opacity:.55;cursor:not-allowed}
   .btn-primario{width:100%;background:var(--verde-700);color:var(--blanco);font-size:15px;padding:12px;letter-spacing:.02em}
   .btn-primario:hover:not(:disabled){filter:brightness(1.08)}
@@ -60,11 +59,20 @@
 
   .filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
   .filtros .campo-grupo{margin:0}
-  .filtros .acciones{display:flex;gap:10px;grid-column:1/-1}
+  .filtros .acciones{display:flex;gap:10px;grid-column:1/-1;flex-wrap:wrap}
   .btn-buscar{background:var(--verde-500);color:var(--blanco);font-size:14px;padding:11px 22px}
   .btn-buscar:hover:not(:disabled){filter:brightness(1.08)}
   .btn-csv{background:var(--verde-100);color:var(--verde-900);font-size:14px;padding:11px 18px}
   .btn-csv:hover:not(:disabled){filter:brightness(.97)}
+  .btn-limpiar{background:transparent;color:var(--gris);border:1px solid var(--linea);font-size:14px;padding:11px 18px}
+  .btn-limpiar:hover{background:var(--papel);color:var(--tinta)}
+
+  /* Segmentado Movimiento */
+  .segmentado{display:flex;border:1px solid var(--linea);border-radius:9px;overflow:hidden}
+  .segmentado button{flex:1;background:var(--blanco);color:var(--gris);font-size:13px;padding:11px 4px;border-radius:0;border-right:1px solid var(--linea)}
+  .segmentado button:last-child{border-right:none}
+  .segmentado button.activo{background:var(--verde-700);color:var(--blanco)}
+  .segmentado button.activo.mov-egr{background:var(--ambar);color:#4a3600}
 
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
   .card{border:1px solid var(--linea);border-radius:10px;padding:14px 16px;background:var(--verde-50)}
@@ -75,25 +83,27 @@
   .card.destac .k{color:var(--verde-100)}
   .card.destac .v{color:var(--blanco)}
 
-  /* Gráfico horas apilado */
+  /* Gráfico horas apilado y clickeable */
   .horas{margin-top:18px}
-  .horas .titulo-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .horas .titulo-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px}
   .horas .titulo{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--gris)}
   .leyenda{display:flex;gap:14px;font-size:12px;color:var(--gris)}
   .leyenda span{display:inline-flex;align-items:center;gap:6px}
   .swatch{width:11px;height:11px;border-radius:3px;display:inline-block}
   .sw-ing{background:var(--verde-500)}
   .sw-egr{background:var(--ambar)}
+  .horas .ayuda{font-size:11px;color:var(--gris);opacity:.8;margin-bottom:8px}
   .fila-hora{display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:4px}
   .fila-hora .hh{width:46px;color:var(--gris);font-family:'JetBrains Mono';flex-shrink:0}
-  .barra-cont{display:flex;height:14px;border-radius:3px;overflow:hidden;background:var(--verde-50);min-width:2px}
-  .seg-ing{background:var(--verde-500);height:100%}
-  .seg-egr{background:var(--ambar);height:100%}
+  .barra-cont{display:flex;height:16px;border-radius:3px;overflow:hidden;background:var(--verde-50);min-width:2px}
+  .seg-ing{background:var(--verde-500);height:100%;cursor:pointer;transition:filter .15s}
+  .seg-egr{background:var(--ambar);height:100%;cursor:pointer;transition:filter .15s}
+  .seg-ing:hover,.seg-egr:hover{filter:brightness(1.18)}
   .fila-hora .n{color:var(--gris);font-family:'JetBrains Mono';flex-shrink:0}
   .fila-hora .n b{color:var(--tinta)}
 
   .tabla-wrap{overflow-x:auto;border:1px solid var(--linea);border-radius:10px}
-  table{border-collapse:collapse;width:100%;font-size:13px;min-width:940px}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:900px}
   thead th{background:var(--verde-50);color:var(--verde-700);font-family:'Archivo';font-weight:700;
     text-transform:uppercase;letter-spacing:.04em;font-size:11px;text-align:left;padding:10px 12px;
     border-bottom:2px solid var(--verde-100);position:sticky;top:0}
@@ -104,27 +114,6 @@
   .badge.ing{background:var(--verde-100);color:var(--verde-900)}
   .badge.egr{background:var(--ambar-suave);color:#7a5b00}
   .badge-veh{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;font-family:'Archivo';letter-spacing:.03em;background:#eef1ef;color:#3a4a41}
-
-  /* Fotos */
-  .btn-foto{background:var(--verde-50);border:1px solid var(--linea);color:var(--verde-700);
-    font-family:'Inter';font-weight:600;font-size:11px;padding:5px 9px;border-radius:7px}
-  .btn-foto:hover{background:var(--verde-100)}
-  .sin-foto{color:var(--gris);opacity:.5}
-  .visor{position:fixed;inset:0;background:rgba(13,33,22,.72);display:none;
-    align-items:center;justify-content:center;padding:20px;z-index:50}
-  .visor.abierto{display:flex}
-  .visor-panel{background:var(--blanco);border-radius:14px;max-width:min(92vw,860px);
-    max-height:90vh;display:flex;flex-direction:column;overflow:hidden;
-    box-shadow:0 24px 70px -20px rgba(0,0,0,.5)}
-  .visor-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:12px 16px;border-bottom:1px solid var(--linea);background:var(--verde-50)}
-  .visor-titulo{font-family:'Archivo';font-weight:700;font-size:13px;text-transform:uppercase;
-    letter-spacing:.06em;color:var(--verde-700)}
-  .visor-cerrar{background:transparent;color:var(--gris);font-size:16px;padding:4px 10px;border-radius:6px}
-  .visor-cerrar:hover{background:var(--verde-100);color:var(--verde-900)}
-  .visor-cuerpo{overflow:auto;display:flex;align-items:center;justify-content:center;min-height:180px}
-  .visor-cuerpo img{max-width:100%;max-height:80vh;display:block}
-  .visor-cargando{padding:40px;color:var(--gris);font-size:14px}
 
   .vacio{padding:34px 18px;text-align:center;color:var(--gris);font-size:14px}
   .conteo{font-size:13px;color:var(--gris)}
@@ -188,6 +177,22 @@
             <input id="fHasta" type="date">
           </div>
           <div class="campo-grupo">
+            <label class="campo">Movimiento</label>
+            <div class="segmentado" id="segMov">
+              <button type="button" data-mov="" class="activo">Todos</button>
+              <button type="button" data-mov="INGRESO">Ingresos</button>
+              <button type="button" data-mov="EGRESO" class="mov-egr">Egresos</button>
+            </div>
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fHoraDesde">Hora desde</label>
+            <select id="fHoraDesde"></select>
+          </div>
+          <div class="campo-grupo">
+            <label class="campo" for="fHoraHasta">Hora hasta</label>
+            <select id="fHoraHasta"></select>
+          </div>
+          <div class="campo-grupo">
             <label class="campo" for="fTipoVeh">Tipo de vehículo</label>
             <select id="fTipoVeh">
               <option value="">Todos</option>
@@ -207,6 +212,7 @@
           <div class="acciones">
             <button class="btn-buscar" id="btnBuscar">Buscar</button>
             <button class="btn-csv" id="btnCsv" disabled>Descargar CSV</button>
+            <button class="btn-limpiar" id="btnLimpiar">Borrar filtros</button>
           </div>
         </div>
         <div id="avisoApp" class="aviso" style="margin-top:14px"></div>
@@ -231,6 +237,7 @@
               <span><i class="swatch sw-egr"></i>Egresos</span>
             </div>
           </div>
+          <div class="ayuda">Tocá una barra para filtrar por esa hora y movimiento.</div>
           <div id="listaHoras"></div>
         </div>
       </div>
@@ -253,17 +260,6 @@
       </div>
     </div>
   </main>
-
-  <!-- Visor de fotos -->
-  <div id="visorFoto" class="visor" onclick="if(event.target===this) cerrarFoto()">
-    <div class="visor-panel">
-      <div class="visor-cab">
-        <span id="visorTitulo" class="visor-titulo">Foto</span>
-        <button class="visor-cerrar" onclick="cerrarFoto()" aria-label="Cerrar">✕</button>
-      </div>
-      <div id="visorCuerpo" class="visor-cuerpo"></div>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -274,8 +270,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbwUUI8zL4PzPILtcn-82RTY
 
 let TOKEN = null;
 let ULTIMO_DETALLE = null; // { columnas, filas } para exportar CSV
-let FOTOS_FILAS = [];      // paralela a filas: { p: idFotoPatente }
-const FOTO_CACHE = {};     // fileId -> dataURL (evita repedir la misma foto)
+let MOV = '';              // '', 'INGRESO', 'EGRESO'
 
 const $ = (id) => document.getElementById(id);
 
@@ -293,11 +288,7 @@ const ERRORES = {
   sin_acceso:'No tenés acceso a ese objetivo.',
   rango_invalido:'Revisá el rango de fechas.',
   error_servidor:'Hubo un problema al procesar la consulta. Probá otra vez.',
-  accion_desconocida:'Acción no reconocida.',
-  foto_invalida:'No se pudo cargar la foto.',
-  foto_no_encontrada:'La foto no está disponible.',
-  foto_no_autorizada:'La foto no está disponible.',
-  foto_muy_grande:'La foto es demasiado grande para mostrarla.'
+  accion_desconocida:'Acción no reconocida.'
 };
 const msgError = (c) => ERRORES[c] || 'No se pudo completar la operación.';
 const mostrarAviso = (el,t) => { el.textContent=t; el.className='aviso error'; };
@@ -333,14 +324,50 @@ function entrarApp(usuario, objetivos){
   }
   (objetivos||[]).forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; sel.appendChild(o); });
 
+  poblarHoras();
+  restablecerFiltros();
+}
+
+function poblarHoras(){
+  ['fHoraDesde','fHoraHasta'].forEach(id=>{
+    const sel = $(id); sel.innerHTML = '';
+    const vacia = document.createElement('option'); vacia.value=''; vacia.textContent='—'; sel.appendChild(vacia);
+    for(let h=0; h<24; h++){
+      const o = document.createElement('option');
+      o.value = h; o.textContent = h.toString().padStart(2,'0')+':00';
+      sel.appendChild(o);
+    }
+  });
+}
+
+function setMov(valor){
+  MOV = valor;
+  document.querySelectorAll('#segMov button').forEach(b=>{
+    b.classList.toggle('activo', b.dataset.mov === valor);
+  });
+}
+
+function restablecerFiltros(){
+  if($('fObjetivo').options.length) $('fObjetivo').selectedIndex = 0;
   const hoy = new Date();
   const primero = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
   $('fDesde').value = primero.toISOString().slice(0,10);
   $('fHasta').value = hoy.toISOString().slice(0,10);
+  setMov('');
+  $('fHoraDesde').value = '';
+  $('fHoraHasta').value = '';
+  $('fTipoVeh').value = '';
+  $('fPatente').value = '';
+  $('fConductor').value = '';
+}
+
+function borrarFiltros(){
+  restablecerFiltros();
+  buscar();
 }
 
 function salir(){
-  TOKEN = null; ULTIMO_DETALLE = null; FOTOS_FILAS = [];
+  TOKEN = null; ULTIMO_DETALLE = null;
   sessionStorage.removeItem('spartan_portal');
   $('app').classList.add('oculto');
   $('login').classList.remove('oculto');
@@ -356,6 +383,9 @@ async function buscar(){
       action:'consulta', token:TOKEN,
       objetivo:$('fObjetivo').value,
       desde:$('fDesde').value, hasta:$('fHasta').value,
+      movimiento:MOV,
+      horaDesde:$('fHoraDesde').value,
+      horaHasta:$('fHoraHasta').value,
       tipoVehiculo:$('fTipoVeh').value,
       patente:$('fPatente').value.trim(),
       conductor:$('fConductor').value.trim()
@@ -367,7 +397,7 @@ async function buscar(){
       $('bloqueHoras').classList.add('oculto');
       $('lblResumen').textContent='—'; $('lblDetalle').textContent='';
       $('thead').innerHTML=''; $('tbody').innerHTML='<tr><td class="vacio">'+msgError(res.error)+'</td></tr>';
-      $('btnCsv').disabled = true; ULTIMO_DETALLE = null; FOTOS_FILAS = [];
+      $('btnCsv').disabled = true; ULTIMO_DETALLE = null;
       return;
     }
     pintarResumen(res);
@@ -379,13 +409,34 @@ async function buscar(){
   }
 }
 
+/* Click en un segmento del gráfico: filtra por esa hora y ese movimiento */
+function filtrarPorBarra(hora, mov){
+  setMov(mov);
+  $('fHoraDesde').value = hora;
+  $('fHoraHasta').value = hora;
+  buscar();
+}
+
 function etiquetaObjetivo(res){
   return (res.objetivos.length>1 ? res.objetivos.length+' objetivos' : res.objetivos[0]);
 }
 
+function descripcionFiltros(res){
+  const partes = [res.rango.desde+' → '+res.rango.hasta];
+  if(MOV) partes.push(MOV==='INGRESO'?'Solo ingresos':'Solo egresos');
+  const hd = $('fHoraDesde').value, hh = $('fHoraHasta').value;
+  if(hd!=='' || hh!==''){
+    const d = hd!=='' ? hd.toString().padStart(2,'0')+':00' : '00:00';
+    const h = hh!=='' ? hh.toString().padStart(2,'0')+':59' : '23:59';
+    partes.push(d+'–'+h);
+  }
+  partes.push(etiquetaObjetivo(res));
+  return partes.join(' · ');
+}
+
 function pintarResumen(res){
   const d = res.resumen;
-  $('lblResumen').textContent = res.rango.desde+' → '+res.rango.hasta+' · '+etiquetaObjetivo(res);
+  $('lblResumen').textContent = descripcionFiltros(res);
   $('cards').innerHTML = [
     tarjeta('Total registros', d.totReg, true),
     tarjeta('Ingresos', d.totIng),
@@ -400,13 +451,14 @@ function pintarResumen(res){
     const max = Math.max.apply(null, activas.map(h=>h.cant));
     const anchoMax = 300; // px
     $('listaHoras').innerHTML = activas.map(h=>{
+      const hNum = parseInt(h.hora, 10);
       const wTotal = Math.max(2, Math.round((h.cant/max)*anchoMax));
       const wIng = h.cant ? Math.round((h.ing/h.cant)*wTotal) : 0;
       const wEgr = wTotal - wIng;
       return '<div class="fila-hora"><span class="hh">'+h.hora+'</span>'+
              '<span class="barra-cont" style="width:'+wTotal+'px">'+
-               (wIng>0?'<span class="seg-ing" style="width:'+wIng+'px"></span>':'')+
-               (wEgr>0?'<span class="seg-egr" style="width:'+wEgr+'px"></span>':'')+
+               (wIng>0?'<span class="seg-ing" style="width:'+wIng+'px" title="Filtrar ingresos de '+h.hora+'" onclick="filtrarPorBarra('+hNum+',\'INGRESO\')"></span>':'')+
+               (wEgr>0?'<span class="seg-egr" style="width:'+wEgr+'px" title="Filtrar egresos de '+h.hora+'" onclick="filtrarPorBarra('+hNum+',\'EGRESO\')"></span>':'')+
              '</span>'+
              '<span class="n"><b>'+h.cant+'</b> ('+h.ing+'/'+h.egr+')</span></div>';
     }).join('');
@@ -421,20 +473,19 @@ function tarjeta(k,v,destac,extra){
 }
 
 function pintarDetalle(res){
-  const cols = res.columnas, filas = res.filas, fotos = res.fotos || [];
-  ULTIMO_DETALLE = { columnas:cols, filas:filas };   // CSV: solo datos, sin fotos
-  FOTOS_FILAS = fotos;
-  $('thead').innerHTML = '<tr>'+cols.map(c=>'<th>'+etiquetaCol(c)+'</th>').join('')+'<th>Foto</th></tr>';
+  const cols = res.columnas, filas = res.filas;
+  ULTIMO_DETALLE = { columnas:cols, filas:filas };
+  $('thead').innerHTML = '<tr>'+cols.map(c=>'<th>'+etiquetaCol(c)+'</th>').join('')+'</tr>';
   $('lblDetalle').textContent = res.total + (res.total===1?' registro':' registros');
 
   if(!filas.length){
-    $('tbody').innerHTML = '<tr><td class="vacio" colspan="'+(cols.length+1)+'">No hay movimientos con esos filtros.</td></tr>';
+    $('tbody').innerHTML = '<tr><td class="vacio" colspan="'+cols.length+'">No hay movimientos con esos filtros.</td></tr>';
   }else{
     const iTipo = cols.indexOf('Tipo');
     const iVeh  = cols.indexOf('TipoVehiculo');
     const datoCols = ['Fecha','Hora','Patente','DNI','CUIL'].map(c=>cols.indexOf(c));
-    $('tbody').innerHTML = filas.map((f,fi)=>{
-      const celdas = f.map((celda,i)=>{
+    $('tbody').innerHTML = filas.map(f=>{
+      return '<tr>'+f.map((celda,i)=>{
         if(i===iTipo){
           const t=(celda||'').toString().toUpperCase();
           const cls = t.indexOf('EGRESO')>=0 ? 'egr':'ing';
@@ -445,12 +496,7 @@ function pintarDetalle(res){
         }
         const cls = datoCols.indexOf(i)>=0 ? ' class="dato"' : '';
         return '<td'+cls+'>'+escHtml(celda)+'</td>';
-      }).join('');
-      const ft = fotos[fi] || {};
-      const boton = ft.p
-        ? '<button class="btn-foto" onclick="abrirFoto(\''+ft.p+'\')">📷 Patente</button>'
-        : '<span class="sin-foto">—</span>';
-      return '<tr>'+celdas+'<td>'+boton+'</td></tr>';
+      }).join('')+'</tr>';
     }).join('');
   }
   $('btnCsv').disabled = filas.length===0;
@@ -464,35 +510,6 @@ function pintarDetalle(res){
 function etiquetaCol(c){ return c==='TipoVehiculo' ? 'Tipo veh.' : c; }
 function escHtml(s){
   return (s===null||s===undefined?'':s.toString()).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-/* ─── Visor de fotos (pasa por el backend, Drive queda privado) ─── */
-async function abrirFoto(fileId){
-  $('visorTitulo').textContent = 'Foto · Patente';
-  $('visorCuerpo').innerHTML = '<div class="visor-cargando">Cargando foto…</div>';
-  $('visorFoto').classList.add('abierto');
-
-  if(FOTO_CACHE[fileId]){
-    $('visorCuerpo').innerHTML = '<img src="'+FOTO_CACHE[fileId]+'" alt="Foto del registro">';
-    return;
-  }
-  try{
-    const res = await api({ action:'verFoto', token:TOKEN, fileId });
-    if(res.error==='sesion_invalida'){ cerrarFoto(); salir(); mostrarAviso($('avisoLogin'), msgError('sesion_invalida')); return; }
-    if(!res.ok){
-      $('visorCuerpo').innerHTML = '<div class="visor-cargando">'+msgError(res.error)+'</div>';
-      return;
-    }
-    const dataUrl = 'data:'+res.mime+';base64,'+res.data;
-    FOTO_CACHE[fileId] = dataUrl;
-    $('visorCuerpo').innerHTML = '<img src="'+dataUrl+'" alt="Foto del registro">';
-  }catch(e){
-    $('visorCuerpo').innerHTML = '<div class="visor-cargando">No se pudo conectar con el servidor.</div>';
-  }
-}
-function cerrarFoto(){
-  $('visorFoto').classList.remove('abierto');
-  $('visorCuerpo').innerHTML = '';
 }
 
 /* ─── CSV (blindaje anti-inyección de fórmulas) ─── */
@@ -524,6 +541,10 @@ $('usuario').addEventListener('keydown', e=>{ if(e.key==='Enter') $('password').
 $('btnSalir').addEventListener('click', salir);
 $('btnBuscar').addEventListener('click', buscar);
 $('btnCsv').addEventListener('click', descargarCsv);
+$('btnLimpiar').addEventListener('click', borrarFiltros);
+document.querySelectorAll('#segMov button').forEach(b=>{
+  b.addEventListener('click', ()=> setMov(b.dataset.mov));
+});
 
 /* ─── Restaurar sesión de esta pestaña ─── */
 (function(){
