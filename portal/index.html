@@ -333,12 +333,14 @@ function entrarApp(usuario, objetivos){
 }
 
 function poblarHoras(){
-  ['fHoraDesde','fHoraHasta'].forEach(id=>{
-    const sel = $(id); sel.innerHTML = '';
+  // "Hora desde" muestra el inicio de la franja (19:00) y "Hora hasta"
+  // el FIN de la franja (23:59), para que sea evidente qué incluye.
+  [['fHoraDesde',':00'],['fHoraHasta',':59']].forEach(par=>{
+    const sel = $(par[0]); sel.innerHTML = '';
     const vacia = document.createElement('option'); vacia.value=''; vacia.textContent='—'; sel.appendChild(vacia);
     for(let h=0; h<24; h++){
       const o = document.createElement('option');
-      o.value = h; o.textContent = h.toString().padStart(2,'0')+':00';
+      o.value = h; o.textContent = h.toString().padStart(2,'0')+par[1];
       sel.appendChild(o);
     }
   });
@@ -432,7 +434,8 @@ function descripcionFiltros(res){
   if(hd!=='' || hh!==''){
     const d = hd!=='' ? hd.toString().padStart(2,'0')+':00' : '00:00';
     const h = hh!=='' ? hh.toString().padStart(2,'0')+':59' : '23:59';
-    partes.push(d+'–'+h);
+    const cruza = hd!=='' && hh!=='' && parseInt(hd,10) > parseInt(hh,10);
+    partes.push(d+'–'+h+(cruza?' · cruza la medianoche':''));
   }
   partes.push(etiquetaObjetivo(res));
   return partes.join(' · ');
