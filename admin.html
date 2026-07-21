@@ -403,6 +403,77 @@
   input[type="password"].campo-pass:focus { border-color: var(--green); }
   .device-editor input[type="password"].campo-pass { background: var(--surface); }
   .hint { font-size: 11px; color: var(--muted); }
+
+  /* ─── SELECTOR DE OBJETIVOS (chips + modal) ─── */
+  .chips-box {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; background: var(--bg); min-height: 44px;
+  }
+  .device-editor .chips-box { background: var(--surface); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--green-light); color: var(--green);
+    border: 1px solid #b8e0c8; border-radius: 20px;
+    padding: 4px 10px; font-size: 12px; font-weight: 600;
+  }
+  .chip button {
+    background: none; border: none; color: var(--green);
+    font-size: 13px; cursor: pointer; padding: 0; line-height: 1;
+  }
+  .chip button:hover { color: var(--danger); }
+  .chips-vacio { font-size: 12px; color: var(--muted); }
+  .btn-add-obj {
+    background: white; border: 1px dashed var(--green); color: var(--green);
+    border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+  }
+  .btn-add-obj:hover { background: var(--green-light); }
+
+  .picker-backdrop {
+    position: fixed; inset: 0; background: rgba(15,31,22,0.55);
+    display: none; align-items: center; justify-content: center;
+    z-index: 800; padding: 20px;
+  }
+  .picker-backdrop.open { display: flex; }
+  .picker {
+    background: white; border-radius: 14px; width: 100%; max-width: 440px;
+    max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,0.4);
+  }
+  .picker-head {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .picker-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 17px;
+    letter-spacing: 2px; color: var(--green);
+  }
+  .picker-close {
+    background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px;
+  }
+  .picker-search { padding: 12px 20px 4px; }
+  .picker-search input { width: 100%; }
+  .picker-lista { overflow-y: auto; flex: 1; padding: 8px 12px 12px; }
+  .picker-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 10px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 500; user-select: none;
+  }
+  .picker-item:hover { background: var(--bg); }
+  .picker-item.marcado { background: var(--green-light); color: var(--green); }
+  .picker-check {
+    width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; color: white; flex-shrink: 0;
+  }
+  .picker-item.marcado .picker-check { background: var(--green); border-color: var(--green); }
+  .picker-vacio { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 10px; }
+  .picker-foot {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
 </style>
 </head>
 <body>
@@ -483,14 +554,31 @@
     </div>
     <div class="form-field" style="flex:1.5;">
       <div class="form-label">Objetivos permitidos</div>
-      <input type="text" id="newUserObjs" placeholder="Ej: ALMACEN_CENTRAL, PLANTA_NORTE" list="objetivosDatalist">
-      <div class="hint">Separá con coma si son varios. Deben coincidir con el nombre exacto del objetivo.</div>
+      <div class="chips-box" id="chips_nuevo"></div>
     </div>
     <button class="btn btn-green" onclick="agregarUsuarioPortal(this)">+ GUARDAR</button>
   </div>
 
   <div id="usuariosPortalList"></div>
 
+</div>
+
+<!-- MODAL SELECTOR DE OBJETIVOS -->
+<div class="picker-backdrop" id="pickerBackdrop" onclick="if(event.target===this) cerrarPicker()">
+  <div class="picker">
+    <div class="picker-head">
+      <div class="picker-title">ELEGIR OBJETIVOS</div>
+      <button class="picker-close" onclick="cerrarPicker()">✕</button>
+    </div>
+    <div class="picker-search">
+      <input type="text" id="pickerBuscar" placeholder="Buscar objetivo..." oninput="renderPickerLista()">
+    </div>
+    <div class="picker-lista" id="pickerLista"></div>
+    <div class="picker-foot">
+      <button class="btn btn-outline" onclick="cerrarPicker()">Cancelar</button>
+      <button class="btn btn-green" onclick="aplicarPicker()">APLICAR</button>
+    </div>
+  </div>
 </div>
 
 <datalist id="objetivosDatalist"></datalist>
@@ -701,12 +789,87 @@ async function guardarDispositivoAdmin(alias, objetivoRaw, puestoRaw, version, b
   }
 }
 
+// ─── SELECTOR DE OBJETIVOS (chips + modal con búsqueda) ───────
+// objetivosSel: contexto -> array de objetivos elegidos.
+// Contextos: 'nuevo' (alta) y 'user_N' (editor de cada usuario).
+let objetivosSel = { nuevo: [] };
+let pickerContexto = null;
+let pickerMarcados = [];
+
+function renderChips(contexto) {
+  const cont = document.getElementById('chips_' + contexto);
+  if (!cont) return;
+  const sel = objetivosSel[contexto] || [];
+  const chips = sel.map(o =>
+    `<span class="chip">${o}<button title="Quitar" onclick="quitarObjetivo('${contexto}','${encodeURIComponent(o)}')">✕</button></span>`
+  ).join('');
+  const vacio = sel.length ? '' : `<span class="chips-vacio">Sin objetivos asignados</span>`;
+  cont.innerHTML = chips + vacio +
+    `<button type="button" class="btn-add-obj" onclick="abrirPicker('${contexto}')">+ Agregar objetivo</button>`;
+}
+
+function quitarObjetivo(contexto, objEnc) {
+  const obj = decodeURIComponent(objEnc);
+  objetivosSel[contexto] = (objetivosSel[contexto] || []).filter(o => o !== obj);
+  renderChips(contexto);
+}
+
+function abrirPicker(contexto) {
+  pickerContexto = contexto;
+  pickerMarcados = [...(objetivosSel[contexto] || [])];
+  document.getElementById('pickerBuscar').value = '';
+  renderPickerLista();
+  document.getElementById('pickerBackdrop').classList.add('open');
+  setTimeout(() => document.getElementById('pickerBuscar').focus(), 50);
+}
+
+function cerrarPicker() {
+  document.getElementById('pickerBackdrop').classList.remove('open');
+  pickerContexto = null;
+}
+
+function renderPickerLista() {
+  const q = document.getElementById('pickerBuscar').value.trim().toUpperCase();
+  const lista = document.getElementById('pickerLista');
+  // Base: objetivos de la flota + los ya asignados a usuarios (por si alguno no tiene tablet hoy)
+  const base = [...new Set([...objetivosConocidos, ...pickerMarcados])].sort();
+  const filtrados = q ? base.filter(o => o.toUpperCase().includes(q)) : base;
+
+  if (!filtrados.length) {
+    lista.innerHTML = `<div class="picker-vacio">No se encontró ningún objetivo con "${q}".<br>Los objetivos salen de la flota de dispositivos.</div>`;
+    return;
+  }
+  lista.innerHTML = filtrados.map(o => {
+    const marcado = pickerMarcados.includes(o);
+    return `<div class="picker-item ${marcado ? 'marcado' : ''}" onclick="togglePickerItem('${encodeURIComponent(o)}')">
+      <span class="picker-check">${marcado ? '✓' : ''}</span>${o}
+    </div>`;
+  }).join('');
+}
+
+function togglePickerItem(objEnc) {
+  const obj = decodeURIComponent(objEnc);
+  if (pickerMarcados.includes(obj)) pickerMarcados = pickerMarcados.filter(o => o !== obj);
+  else pickerMarcados.push(obj);
+  renderPickerLista();
+}
+
+function aplicarPicker() {
+  if (pickerContexto) {
+    objetivosSel[pickerContexto] = [...pickerMarcados].sort();
+    renderChips(pickerContexto);
+  }
+  cerrarPicker();
+}
+
 // ─── USUARIOS DEL PORTAL DE CLIENTES ──────────────────────────
 let userEditActivo = {};
 
 function toggleAddUser() {
   const f = document.getElementById('addUserForm');
-  f.style.display = (f.style.display === 'none' || !f.style.display) ? 'flex' : 'none';
+  const abrir = (f.style.display === 'none' || !f.style.display);
+  f.style.display = abrir ? 'flex' : 'none';
+  if (abrir) renderChips('nuevo');
 }
 
 async function cargarUsuariosPortal() {
@@ -738,6 +901,7 @@ function renderUsuariosPortal(lista) {
 
   cont.innerHTML = lista.map((u, i) => {
     userEditActivo[i] = u.activo ? 'SI' : 'NO';
+    objetivosSel['user_' + i] = (u.objetivos || '').split(',').map(x => x.trim()).filter(Boolean);
     const badge = u.activo
       ? `<span class="badge-activo">Activo</span>`
       : `<span class="badge-inactivo">Inactivo</span>`;
@@ -760,7 +924,7 @@ function renderUsuariosPortal(lista) {
           <div class="editor-row">
             <div class="form-field" style="flex:1.5;">
               <div class="form-label">Objetivos permitidos</div>
-              <input type="text" id="userObjs_${i}" value="${objsEsc}" list="objetivosDatalist">
+              <div class="chips-box" id="chips_user_${i}"></div>
             </div>
             <div class="form-field">
               <div class="form-label">Nueva contraseña</div>
@@ -782,6 +946,7 @@ function renderUsuariosPortal(lista) {
         </div>
       </div>`;
   }).join('');
+  lista.forEach((u, i) => renderChips('user_' + i));
 }
 
 function toggleUserEditor(i) {
@@ -815,25 +980,25 @@ async function guardarUsuarioPortalApi(payloadExtra, btnEl) {
 async function agregarUsuarioPortal(btn) {
   const usuario = document.getElementById('newUserNombre').value.trim().toLowerCase();
   const pass    = document.getElementById('newUserPass').value;
-  const objs    = document.getElementById('newUserObjs').value.trim();
+  const objs    = (objetivosSel['nuevo'] || []).join(', ');
   if (!usuario) { alert('Falta el nombre de usuario'); return; }
   if (!pass || pass.length < 8) { alert('La contraseña debe tener al menos 8 caracteres'); return; }
-  if (!objs)    { alert('Asigná al menos un objetivo'); return; }
+  if (!objs)    { alert('Asigná al menos un objetivo con el botón "+ Agregar objetivo"'); return; }
 
   const ok = await guardarUsuarioPortalApi({ usuario, password: pass, objetivos: objs, activo: 'SI' }, btn);
   if (ok) {
     document.getElementById('newUserNombre').value = '';
     document.getElementById('newUserPass').value = '';
-    document.getElementById('newUserObjs').value = '';
+    objetivosSel['nuevo'] = [];
     document.getElementById('addUserForm').style.display = 'none';
   }
 }
 
 async function guardarEdicionUsuario(i, userEnc, btn) {
   const usuario = decodeURIComponent(userEnc);
-  const objs = document.getElementById(`userObjs_${i}`).value.trim();
+  const objs = (objetivosSel['user_' + i] || []).join(', ');
   const pass = document.getElementById(`userPass_${i}`).value;
-  if (!objs) { alert('Asigná al menos un objetivo'); return; }
+  if (!objs) { alert('Asigná al menos un objetivo con el botón "+ Agregar objetivo"'); return; }
   if (pass && pass.length < 8) { alert('La nueva contraseña debe tener al menos 8 caracteres'); return; }
   await guardarUsuarioPortalApi({ usuario, password: pass, objetivos: objs, activo: userEditActivo[i] || 'SI' }, btn);
 }
