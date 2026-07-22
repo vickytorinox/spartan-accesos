@@ -330,6 +330,7 @@ function entrarApp(usuario, objetivos){
 
   poblarHoras();
   restablecerFiltros();
+  buscar(); // carga los datos del mes en curso sin esperar a que toquen Buscar
 }
 
 function poblarHoras(){
@@ -445,9 +446,7 @@ function pintarResumen(res){
   const d = res.resumen;
   $('lblResumen').textContent = descripcionFiltros(res);
   const pv = d.porVeh || null;
-  const subsVeh = pv ? [['Autos',pv.auto],['Camiones',pv.camion],['Cubas',pv.cubas]]
-                        .concat(pv.sinDato>0 ? [['Sin dato',pv.sinDato]] : [])
-                     : null;
+  const subsVeh = pv ? [['Autos',pv.auto],['Camiones',pv.camion],['Cubas',pv.cubas]] : null;
   $('cards').innerHTML = [
     tarjeta('Total registros', d.totReg, {destac:true}),
     tarjeta('Ingresos', d.totIng),
