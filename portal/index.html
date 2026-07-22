@@ -331,6 +331,7 @@ function entrarApp(usuario, objetivos){
   poblarHoras();
   restablecerFiltros();
   buscar(); // carga los datos del mes en curso sin esperar a que toquen Buscar
+  iniciarAutoRefresco();
 }
 
 function poblarHoras(){
@@ -375,10 +376,31 @@ function borrarFiltros(){
 
 function salir(){
   TOKEN = null; ULTIMO_DETALLE = null;
+  detenerAutoRefresco();
   sessionStorage.removeItem('spartan_portal');
   $('app').classList.add('oculto');
   $('login').classList.remove('oculto');
   $('password').value='';
+}
+
+/* ─── Auto-refresco cada 30 minutos ───
+   Repite la misma búsqueda con los filtros que el cliente ya tenga
+   puestos, sin pisarle nada. Si la pestaña está en segundo plano
+   (minimizada u otra solapa activa) se salta ese ciclo para no
+   gastar cuota de más; retoma solo cuando vuelve a estar visible. */
+let AUTOREFRESCO_ID = null;
+const AUTOREFRESCO_MS = 30 * 60 * 1000;
+
+function iniciarAutoRefresco(){
+  detenerAutoRefresco();
+  AUTOREFRESCO_ID = setInterval(()=>{
+    if(document.hidden) return;
+    buscar();
+  }, AUTOREFRESCO_MS);
+}
+
+function detenerAutoRefresco(){
+  if(AUTOREFRESCO_ID){ clearInterval(AUTOREFRESCO_ID); AUTOREFRESCO_ID = null; }
 }
 
 /* ─── Buscar (una sola consulta unificada) ─── */
